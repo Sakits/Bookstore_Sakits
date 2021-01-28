@@ -11,8 +11,12 @@ class BplusTree
 {
     static const int max_size = 4, block_size = max_size / 2;
 
+    public:
+        int file_read_cnt = 0, file_write_cnt = 0;
+
     private:
         char file[30];
+        fstream fio;
 
         class node
         {
@@ -34,7 +38,7 @@ class BplusTree
         {
             strcpy(file, file_name);
 
-            fstream fin(file, ios :: in | ios :: binary);
+            fstream fin (file, ios :: in | ios :: binary);
             if (!fin.is_open())
             {
                 fstream fout(file, ios :: out | ios :: binary);
@@ -42,25 +46,25 @@ class BplusTree
                 fout.write(reinterpret_cast<char *>(&initnode), sizeof(initnode));
                 fout.close();
             }
-            fin.close();
+            fio.open(file, ios :: in | ios :: out | ios :: binary);
         }
+
+        ~BplusTree() {fio.close();}
 
         template <typename T>
         void file_read(const int pos, T &p)
         {
-            fstream fin(file, ios :: in | ios :: binary);
-            fin.seekg(pos, ios :: beg);
-            fin.read(reinterpret_cast<char *>(&p), sizeof(p));
-            fin.close();
+            file_read_cnt++;
+            fio.seekg(pos, ios :: beg);
+            fio.read(reinterpret_cast<char *>(&p), sizeof(p));
         }
 
         template <typename T>
         void file_write(const int pos, T &p)
         {
-            fstream fout(file, ios :: in | ios :: out | ios :: binary);
-            fout.seekp(pos, ios :: beg);
-            fout.write(reinterpret_cast<char *>(&p), sizeof(p));
-            fout.close();
+            file_write_cnt++;
+            fio.seekp(pos, ios :: beg);
+            fio.write(reinterpret_cast<char *>(&p), sizeof(p));
         }
 
 // --------------------------- debug area ---------------------------
@@ -84,13 +88,21 @@ class BplusTree
                 dfs(now.child[i]);
         }
 
+        void time_test(int n)
+        {
+            while (n --)
+            {
+                node root;
+                root.size = rand();
+            }
+        }
+
 // --------------------------- debug area ---------------------------
 
         int get_file_end()
         {
-            fstream fout(file, ios :: app | ios :: binary);
-            int pos = fout.tellp();
-            fout.close();
+            fio.seekp(0, ios :: end);
+            int pos = fio.tellp();
             return pos;
         }
 
@@ -111,19 +123,26 @@ class BplusTree
             now.size++;
         }
 
-        void insert(int file_pos, const char* _key, int x = 0, int fa = -1)
+        void insert(int file_pos, const char* _key, int x = 0, node* const faptr = nullptr)
         {
             node now; file_read(x, now);
             int pos = get_pos(now, _key);
 
-            if (now.isleaf) insertone(now, pos, file_pos, _key);
+            if (now.isleaf) 
+            {
+                insertone(now, pos, file_pos, _key);
+            }
             else 
             {
                 pos -= (pos == now.size);
-                insert(file_pos, _key, now.child[pos], x);
-                file_read(x, now);
-                node son; file_read(now.child[pos], son);
-                strcpy(now.key[pos], son.key[son.size - 1]);
+                insert(file_pos, _key, now.child[pos], &now);
+            }
+
+            if (faptr)
+            {
+                node &fa = *faptr;
+                for (int i = 0; i < fa.size; i++)
+                    if (fa.child[i] == x) strcpy(fa.key[i], now.key[now.size - 1]);
             }
 
             if (now.size > max_size)
@@ -144,7 +163,7 @@ class BplusTree
                 now.size = block_size;
                 now.nextptr = nxt_pos;
 
-                if (fa == -1)
+                if (!faptr)
                 {
                     node root; int root_pos = get_file_end();
                     x = root_pos; root_pos = 0; 
@@ -158,20 +177,19 @@ class BplusTree
                 }
                 else
                 {
-                    node root; file_read(fa, root);
+                    node &fa = *faptr;
 
                     int pos = 0;
-                    for (int i = 0; i < root.size; i++)
-                        if (root.child[i] == x)
+                    for (int i = 0; i < fa.size; i++)
+                        if (fa.child[i] == x)
                         {
                             pos = i;
-                            root.child[i] = nxt_pos;
-                            strcpy(root.key[i], nxt.key[nxt.size - 1]);
+                            fa.child[i] = nxt_pos;
+                            strcpy(fa.key[i], nxt.key[nxt.size - 1]);
                             break;
                         }
 
-                    insertone(root, pos, x, now.key[now.size - 1]);
-                    file_write(fa, root);
+                    insertone(fa, pos, x, now.key[now.size - 1]);
                 }
             }
 
