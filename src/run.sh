@@ -1,0 +1,1 @@
+g++ -O2 -Wall -std=c++11 debug.cpp -o debug && rm storage && ./debug
