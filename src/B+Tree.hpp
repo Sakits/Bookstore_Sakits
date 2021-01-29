@@ -232,10 +232,12 @@ class BplusTree
                 else
                 {
                     for (int i = 0; i < now.size; i++)
-                    if (!strcpy(now.key[i], _key))
                     {
-                        pos = i;
-                        break;
+                        if (!strcmp(now.key[i], _key))
+                        {
+                            pos = i;
+                            break;
+                        }
                     }
                 }
             
