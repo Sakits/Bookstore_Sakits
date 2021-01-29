@@ -30,44 +30,53 @@ class user
             return *this;
         }
 
+// --------------------------- debug area ---------------------------
+
+        void print()
+        {
+            printf("pri:%d\n", pri);
+            printf("pw:%s\nname:%s\nuid:%s\n",pw, name, uid);
+            puts("");
+        }
+
+// --------------------------- debug area ---------------------------
+
+
         const char* get_uid() const {return uid;}
 
         const int get_pri() const {return pri;}
 
         const bool check_pw(const char* _pw) {return !strcmp(pw, _pw);}
-};
 
-void Invalid() {puts("Invalid");}
+        void changepw(const char* npw) {strcpy(pw, npw);}
+};
 
 namespace um
 {
-    enum privilege {base = 0, customer = 1, clerk = 3, root = 7};
+    enum privilege {Base = 0, Customer = 1, Clerk = 3, Root = 7};
     vector <user> log_st;
     fstream fio;
     BplusTree bpt_uid("index_users_uid");
     user current_user;
 
 // --------------------------- debug area ---------------------------
+    void Invalid() {puts("Invalid");}
 
-    void pwerror()
-    {
-        return Invalid();
-    }
+    void pwerror() {return Invalid();}
 
-    void logout_limit_exceed()
-    {
-        return Invalid();
-    }
+    void logout_limit_exceed() {return Invalid();}
 
-    void user_add_have_no_permission()
-    {
-        return Invalid();
-    }
+    void user_add_have_no_permission() {return Invalid();}
 
-    void user_add_pri_error()
-    {
-        return Invalid();
-    }
+    void user_add_pri_error() {return Invalid();}
+    
+    void user_delete_have_no_permission() {return Invalid();}
+
+    void user_changepw_have_no_permission() {return Invalid();}
+    
+    void user_changepw_wrong_opw() {return Invalid();}
+
+    void user_id_has_been_used() {return Invalid();}
 
 // --------------------------- debug area ---------------------------
 
@@ -80,9 +89,23 @@ namespace um
         bpt_uid.insert(pos, p.get_uid());
     }
 
-    void file_read(const char* uid, user &p)
+    bool file_read(const char* uid, user &p)
     {
         int pos = bpt_uid.query(uid);
+        if (pos == -1) return 0;
+        fio.seekg(pos, ios :: beg);
+        fio.read(reinterpret_cast<char *>(&p), sizeof(p));
+        return 1;
+    }
+
+    void file_write(int pos, user &p)
+    {
+        fio.seekp(pos, ios :: beg);
+        fio.write(reinterpret_cast<char *>(&p), sizeof(p));
+    }
+
+    void file_read(int pos, user &p)
+    {
         fio.seekg(pos, ios :: beg);
         fio.read(reinterpret_cast<char *>(&p), sizeof(p));
     }
@@ -109,8 +132,14 @@ namespace um
 
     void login(const char* uid, const char* pw = nullptr)
     {
-        user now; file_read(uid, now);
+        user now; if (!file_read(uid, now)) return Invalid();
         if (!pw && current_user.get_pri() <= now.get_pri()) return Invalid();
+
+        // if (pw)
+        // {
+        //     printf("%s\n", pw);
+        //     now.print();
+        // }
 
         if (!pw || now.check_pw(pw)) 
         {
@@ -130,21 +159,40 @@ namespace um
 
     void user_add(const char* uid, const char* pw, int pri, const char* name)
     {
-        if (!pri) return user_add_pri_error();
         if (current_user.get_pri() <= pri) return user_add_have_no_permission();
+        if (bpt_uid.query(uid) != -1) return user_id_has_been_used();
         user now(pri, uid, pw, name);
         file_write(now);
     }
 
     void user_register(const char* uid, const char*pw, const char* name)
     {
+        if (bpt_uid.query(uid) != -1) return user_id_has_been_used();
         user now(0, uid, pw, name);
         file_write(now);
     }
 
     void user_delete(const char* uid)
     {
-        bpt_uid.erase()
+        if (current_user.get_pri() != Root) return user_delete_have_no_permission();
+        bpt_uid.erase(uid);
+    }
+
+    void user_changepw(const char* uid, const char* npw, const char* opw = nullptr)
+    {
+        if (current_user.get_pri() < Customer) return user_changepw_have_no_permission();
+        if (!opw && current_user.get_pri() != Root) return user_changepw_have_no_permission();
+
+        user now; 
+        int pos = bpt_uid.query(uid); 
+        if (pos == -1) return Invalid();
+        file_read(pos, now);
+
+        if (opw && !now.check_pw(opw)) return user_changepw_wrong_opw();
+
+        now.changepw(npw);
+
+        file_write(pos, now);
     }
 }
 
