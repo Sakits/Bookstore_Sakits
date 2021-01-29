@@ -5,11 +5,9 @@
 #include <fstream>
 using namespace std;
 
-inline void Invalid() {puts("Invalid");} // to be merged
-
 class BplusTree
 {
-    static const int max_size = 4, block_size = max_size / 2;
+    static const int max_size = 70, block_size = max_size / 2;
 
     public:
         int file_read_cnt = 0, file_write_cnt = 0;

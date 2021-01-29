@@ -9,7 +9,7 @@ int main()
     // cin >> n;
     // tr.time_test(n);
 
-    int seed = time(0);
+    int seed = 2333;
     srand(seed);
     // cout << seed << endl;
     int n = 100000;
