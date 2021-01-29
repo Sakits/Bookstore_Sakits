@@ -21,8 +21,8 @@ class BplusTree
         class node
         {
             public:
+                int nxtptr = -1, preptr = -1, size = 0;
                 bool isleaf = 1;
-                int size = 0, nextptr = -1;
                 int child[max_size + 1];
                 char key[max_size + 1][30];
 
@@ -30,6 +30,21 @@ class BplusTree
                 {
                     memset(child, 0, sizeof(child));
                     memset(key, 0, sizeof(key));
+                }
+
+                node &operator = (const node &other)
+                {
+                    if (this == &other) return *this;
+
+                    nxtptr = other.nxtptr;
+                    preptr = other.preptr;
+                    size = other.size;
+                    isleaf = other.isleaf;
+
+                    memcpy(child, other.child, sizeof(child));
+                    memcpy(key, other.key, sizeof(key));
+
+                    return *this;
                 }
         };
 
@@ -54,7 +69,7 @@ class BplusTree
         template <typename T>
         void file_read(const int pos, T &p)
         {
-            file_read_cnt++;
+            // file_read_cnt++;
             fio.seekg(pos, ios :: beg);
             fio.read(reinterpret_cast<char *>(&p), sizeof(p));
         }
@@ -62,7 +77,7 @@ class BplusTree
         template <typename T>
         void file_write(const int pos, T &p)
         {
-            file_write_cnt++;
+            // file_write_cnt++;
             fio.seekp(pos, ios :: beg);
             fio.write(reinterpret_cast<char *>(&p), sizeof(p));
         }
@@ -71,7 +86,7 @@ class BplusTree
 
         void printall(const node &p)
         {
-            printf("p.isleaf:%d p.size:%d p.nextptr:%d\n", p.isleaf, p.size, p.nextptr);
+            printf("p.isleaf:%d p.size:%d p.nxtptr:%d p.preptr:%d\n", p.isleaf, p.size, p.nxtptr, p.preptr);
             for (int i = 0; i < p.size; i++)
                 printf("i:%d child[i]:%d key[i]:%s\n", i, p.child[i], p.key[i]);
             puts("");
@@ -150,7 +165,10 @@ class BplusTree
                 node nxt; int nxt_pos = get_file_end();
                 nxt.isleaf = now.isleaf;
                 nxt.size = now.size - block_size;
-                nxt.nextptr = now.nextptr;
+                nxt.nxtptr = now.nxtptr;
+                nxt.preptr = x;
+
+                if (~nxt.nxtptr) file_write(nxt.nxtptr + sizeof(int), nxt_pos);
                 
                 for (int i = block_size; i < now.size; i++)
                 {
@@ -161,12 +179,13 @@ class BplusTree
                 file_write(nxt_pos, nxt);
 
                 now.size = block_size;
-                now.nextptr = nxt_pos;
+                now.nxtptr = nxt_pos;
 
                 if (!faptr)
                 {
                     node root; int root_pos = get_file_end();
-                    x = root_pos; root_pos = 0; 
+                    x = root_pos; file_write(nxt_pos + sizeof(int), x); 
+                    root_pos = 0; 
                     root.isleaf = 0;
                     root.size = 2;
                     root.child[0] = x; root.child[1] = nxt_pos;
@@ -194,6 +213,189 @@ class BplusTree
             }
 
             file_write(x, now);
+        }
+
+        void erase(int file_pos, const char* _key, int x = 0, node* const faptr = nullptr)
+        {
+            node now; file_read(x, now);
+            
+            if (now.isleaf)
+            {
+                int pos = -1;
+                for (int i = 0; i < now.size; i++)
+                if (now.child[i] == file_pos)
+                {
+                    pos = i;
+                    break;
+                }
+            
+                if (pos == -1) return;
+
+                for (int i = pos; i < now.size - 1; i++)
+                {
+                    now.child[i] = now.child[i + 1];
+                    strcpy(now.key[i], now.key[i + 1]);
+                }
+
+                now.size--;
+            }
+            else
+            {
+                int pos = get_pos(now, _key);
+                erase(file_pos, _key, now.child[pos], &now);
+            }
+
+            int nxtptr = -1, preptr = -1;
+            if (faptr)
+            {
+                int pos = 0;
+                node &fa = *faptr;
+                for (int i = 0; i < fa.size; i++)
+                if (fa.child[i] == x)
+                {
+                    pos = i;
+                    break;
+                }
+                if (pos) preptr = fa.child[pos - 1];
+                if (pos != fa.size - 1) nxtptr = fa.child[pos + 1];
+            }
+
+            if (now.size < block_size)
+            {
+                node nxt, pre; 
+                if (~nxtptr)
+                {
+                    file_read(now.nxtptr, nxt);
+                    
+                    if (nxt.size > block_size)
+                    {
+                        now.child[now.size] = nxt.child[0];
+                        strcpy(now.key[now.size], nxt.key[0]);
+                        now.size++;
+
+                        for (int i = 0; i < nxt.size - 1; i++)
+                        {
+                            nxt.child[i] = nxt.child[i + 1];
+                            strcpy(nxt.key[i], nxt.key[i + 1]);
+                        }
+                        nxt.size--;
+
+                        file_write(now.nxtptr, nxt);
+                    }
+                    else
+                    {
+                        for (int i = 0; i < nxt.size; i++)
+                        {
+                            now.child[now.size] = nxt.child[i];
+                            strcpy(now.key[now.size], nxt.key[i]);
+                            now.size++;
+                        }
+
+                        node &fa = *faptr;
+                        for (int i = 0; i < fa.size; i++)
+                        {
+                            if (fa.child[i] == now.nxtptr)
+                            {
+                                for (int j = i; j < fa.size - 1; j++)
+                                {
+                                    fa.child[j] = fa.child[j + 1];
+                                    strcpy(fa.key[j], fa.key[j + 1]);
+                                }
+                                fa.size--;
+                                break;
+                            }
+                        }
+
+                        if (~nxt.nxtptr)
+                        {
+                            now.nxtptr = nxt.nxtptr;
+                            file_write(nxt.nxtptr + sizeof(int), x);
+                        }
+                        else now.nxtptr = -1;
+                    }
+                }
+                else if (~preptr)
+                {
+                    file_read(now.preptr, pre);
+                    
+                    if (pre.size > block_size)
+                    {
+                        for (int i = now.size; i; i--)
+                        {
+                            now.child[i] = now.child[i - 1];
+                            strcpy(now.key[i], now.key[i - 1]);
+                        }
+                        now.child[0] = pre.child[pre.size - 1];
+                        strcpy(now.key[0], pre.key[pre.size - 1]);
+                        now.size++;
+                        pre.size--;
+
+                        file_write(now.preptr, pre);
+
+                        node &fa = *faptr;
+                        for (int i = 0; i < fa.size; i++)
+                        if (fa.child[i] == now.preptr)
+                        {
+                            strcpy(fa.key[i], pre.key[pre.size - 1]);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < now.size; i++)
+                        {
+                            now.child[i + pre.size] = now.child[i];
+                            strcpy(now.key[i + pre.size], now.key[i]);
+                        }
+
+                        for (int i = 0; i < pre.size; i++)
+                        {
+                            now.child[i] = pre.child[i];
+                            strcpy(now.key[i], pre.key[i]);
+                        }
+                        now.size += pre.size;
+
+                        node &fa = *faptr;
+                        for (int i = 0; i < fa.size; i++)
+                        {
+                            if (fa.child[i] == now.preptr)
+                            {
+                                for (int j = i; j < fa.size - 1; j++)
+                                {
+                                    fa.child[j] = fa.child[j + 1];
+                                    strcpy(fa.key[j], fa.key[j + 1]);
+                                }
+                                fa.size--;
+                                break;
+                            }
+                        }
+
+                        if (~pre.preptr)
+                        {
+                            now.preptr = pre.preptr;
+                            file_write(pre.preptr, x);
+                        }
+                        else now.preptr = -1;
+                    }
+                }
+            }
+
+            if (faptr)
+            {
+                node &fa = *faptr;
+                if (fa.size > 1 || ~fa.preptr || ~fa.nxtptr)
+                {
+                    for (int i = 0; i < fa.size; i++)
+                    if (fa.child[i] == x)
+                    {
+                        strcpy(fa.key[i], now.key[now.size - 1]);
+                        break;
+                    }
+                }
+                else
+                    x = -1, fa = now;
+            }
+            if (~x) file_write(x, now);
         }
 
         int query(const char* _key, int x = 0)
