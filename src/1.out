@@ -1,75 +1,20 @@
-argc:3 Always Challenge Miracles. 
 Invalid
-argc:3 su root sjtu 
-argc:5 useradd worker0 worker0_password 3 WilsonInc 
-argc:5 useradd worker0 worker0_passworddd 3 Harrison-Martin 
 Invalid
-argc:5 useradd root2 sjtu2 7 OrtizLLC 
 Invalid
-argc:5 useradd root sjtu 1 White-Alvarado 
 Invalid
-argc:3 passwd worker0 worker0_passworddd 
-argc:3 passwd root sjtuuu 
-argc:2 delete user0 
-argc:1 logout 
-argc:3 Always Cook Mushroom. 
 Invalid
-argc:3 useradd user_ user__password 
 Invalid
-argc:3 register user__ user___password 
 Invalid
-argc:1 logout 
 Invalid
-argc:2 delete user 
 Invalid
-argc:3 passwd root sjtu 
 Invalid
-argc:1 Stone-Foster 
 Invalid
-argc:3 su worker0 worker0_password 
 Invalid
-argc:3 su worker0 worker0_passworddd 
-argc:4 passwd worker0 worker0_password worker0_password 
 Invalid
-argc:5 useradd user0 user0_password 1 YEFA 
-argc:5 register user1 user1_password hanq qing 
 Invalid
-argc:2 delete user1 
 Invalid
-argc:1 logout 
-argc:3 su root sjtuuu 
-argc:2 delete worker0 
-argc:2 delete worker0 
-argc:2 delete user0 
-argc:5 useradd user0 user0_password 1 Mendoza,PotterandMorris 
 Invalid
-argc:1 logout 
-argc:3 su user0 user0_password 
-argc:4 passwd user1 user1_password user1_passworddd 
 Invalid
-argc:1 logout 
-argc:3 su user0 user0_password 
-argc:2 delete user0 
 Invalid
-argc:1 logout 
-argc:3 su root sjtuuu 
-argc:2 delete user0 
-argc:5 useradd worker1 worker1_password 3 Baxter-Harrison 
-argc:5 useradd user2 user2_password 1 Gray-Yates 
-argc:4 register user3 user3_password Edwards-Hall 
-argc:1 logout 
-argc:3 su user2 user2_password 
-argc:1 logout 
-argc:3 su user3 user3_password 
-argc:1 logout 
-argc:3 su worker1 worker1_password 
-argc:5 useradd user4 user4_password 1 Roberts-Mcdonald 
-argc:4 register user5 user5_password Li,TorresandGreen 
-argc:1 logout 
-argc:3 su user4 user4_password 
-argc:1 logout 
-argc:3 su user5 user5_password 
-argc:1 logout 
-argc:1 Congratulations! 
 Invalid
-argc:1 exit 
+Invalid

@@ -25,10 +25,10 @@ bool get_line()
         i = j; argc++;
     }
 
-    printf("argc:%d ", argc);
-    for (int i = 0; i < argc; i++)
-        printf("%s ", argv[i]);
-    puts("");
+    // printf("argc:%d ", argc);
+    // for (int i = 0; i < argc; i++)
+    //     printf("%s ", argv[i]);
+    // puts("");
 
     return 1;
 }

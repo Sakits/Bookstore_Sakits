@@ -78,6 +78,8 @@ namespace um
 
     void user_id_has_been_used() {return Invalid();}
 
+    void user_delete_user_not_found() {return Invalid();}
+
 // --------------------------- debug area ---------------------------
 
 
@@ -175,7 +177,7 @@ namespace um
     void user_delete(const char* uid)
     {
         if (current_user.get_pri() != Root) return user_delete_have_no_permission();
-        bpt_uid.erase(uid);
+        if (!bpt_uid.erase(uid)) return user_delete_user_not_found();
     }
 
     void user_changepw(const char* uid, const char* npw, const char* opw = nullptr)
