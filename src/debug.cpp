@@ -9,10 +9,10 @@ int main()
     // cin >> n;
     // tr.time_test(n);
 
-    int seed = 2333;
+    int seed = time(0);
     srand(seed);
     // cout << seed << endl;
-    int n = 100000;
+    int n = 100;
     for (int i = 1; i <= n; i++)
     {
         int len = 1 + rand() % 10;
@@ -36,10 +36,10 @@ int main()
     //  tr.dfs();
     for (int i = 1; i <= n; i++)
     {
-        tr.erase(i, s[i]);
+        tr.erase(s[i]);
         //  printf("delete: i:%d s[i]:%s\n", i, s[i]);
         //  tr.dfs();
-        /*for (int j = i + 1; j <= n; j++)
+        for (int j = i + 1; j <= n; j++)
         {
             int x = tr.query(s[j]);
             if ( x == -1 || strcmp(s[j], s[x]))
@@ -48,7 +48,7 @@ int main()
                 puts("QAAQ");
                 return 0;
             }
-        }*/
+        }
     }
 
     // printf("%s\n", s[30]);
