@@ -11,13 +11,14 @@ int main()
 
     int seed = time(0);
     srand(seed);
-    int n = 10000;
+    // cout << seed << endl;
+    int n = 100000;
     for (int i = 1; i <= n; i++)
     {
         int len = 1 + rand() % 10;
         for (int j = 0; j < len; j++)
             s[i][j] = 'a' + rand() % 26;
-        //   printf("in :: i:%d s[i]:%s\n", i, s[i]);
+        //    printf("in :: i:%d s[i]:%s\n", i, s[i]);
         tr.insert(i, s[i]);
         //  tr.dfs();
 /*
@@ -28,23 +29,27 @@ int main()
              return 0;
         }
 */
-        // tr.dfs();
+        //  tr.dfs();
         // printf("i:%d\n", i);
     }
 
+    //  tr.dfs();
     for (int i = 1; i <= n; i++)
     {
-        int x = i;
-        // printf("%d %d\n", x, tr.query(s[x]));
-        if (tr.query(s[x]) == -1 || strcmp(s[x], s[tr.query(s[x])]))
+        tr.erase(i, s[i]);
+        //  printf("delete: i:%d s[i]:%s\n", i, s[i]);
+        //  tr.dfs();
+        /*for (int j = i + 1; j <= n; j++)
         {
-            printf("seed:%d x:%d %d\n", seed, x, tr.query(s[x]));
-            puts("QAAQ");
-            return 0;
-        }
+            int x = tr.query(s[j]);
+            if ( x == -1 || strcmp(s[j], s[x]))
+            {
+                printf("seed:%d i:%d j:%d %d\n", seed, i, j, x);
+                puts("QAAQ");
+                return 0;
+            }
+        }*/
     }
-
-   
 
     // printf("%s\n", s[30]);
 
