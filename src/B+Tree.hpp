@@ -213,7 +213,7 @@ class BplusTree
             file_write(x, now);
         }
 
-        void erase(const char* _key, int file_pos = -1, int x = 0, node* const faptr = nullptr)
+        bool erase(const char* _key, int file_pos = -1, int x = 0, node* const faptr = nullptr)
         {
             node now; file_read(x, now);
             
@@ -239,7 +239,7 @@ class BplusTree
                     }
                 }
             
-                if (pos == -1) return;
+                if (pos == -1) return 0;
 
                 for (int i = pos; i < now.size - 1; i++)
                 {
@@ -252,7 +252,7 @@ class BplusTree
             else
             {
                 int pos = get_pos(now, _key);
-                erase(_key, file_pos, now.child[pos], &now);
+                if (!erase(_key, file_pos, now.child[pos], &now)) return 0;
             }
 
             int nxtptr = -1, preptr = -1;
@@ -406,6 +406,8 @@ class BplusTree
                     x = -1, fa = now;
             }
             if (~x) file_write(x, now);
+
+            return 1;
         }
 
         int query(const char* _key, int x = 0)
