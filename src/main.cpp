@@ -5,7 +5,11 @@ int argc;
 char argv[maxn][maxn];
 string s;
 
-void Invalid() {puts("Invalid");}
+void Invalid() 
+{
+    puts("main"); 
+    puts("Invalid");
+}
 
 bool get_line()
 {
@@ -54,6 +58,12 @@ void init()
     um :: init();
     bm :: init();
     finance :: init();
+
+
+    // bm :: fio.seekg(576, ios :: beg);
+    // book now; bm :: fio.read(reinterpret_cast<char *>(&now), sizeof(now));
+    // now.print();
+    // bm :: fio.seekg(0, ios :: beg);
 }
 
 int main() 
@@ -145,5 +155,6 @@ int main()
         else if (!strcmp(argv[0], "quit")) return 0;
         else Invalid();
     }
+
     return 0;
 }

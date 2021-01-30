@@ -15,7 +15,11 @@ namespace finance
 
     void Invalid() {puts("Invalid");}
 
-    void log_is_not_enough() {return Invalid();}
+    void log_is_not_enough() 
+    {
+        puts("log_is_not_enough ");
+        return Invalid();
+    }
 
 // --------------------------- debug area ---------------------------
 
@@ -167,7 +171,7 @@ namespace bm
 
     void null_current_book()
     {
-        printf("null_current_book");
+        printf("null_current_book ");
         return Invalid();
     }
 
@@ -328,7 +332,12 @@ namespace bm
         if (flag1) bpt_isbn.erase(current_book.get_ISBN(), pos);
         if (flag2) bpt_name.erase(current_book.get_name(), pos);
         if (flag3) bpt_aut.erase(current_book.get_author(), pos);
-        if (flag4) bpt_key.erase(current_book.get_keyword(), pos);
+        if (flag4) 
+        {
+            split_key(current_book.get_keyword());
+            for (int i = 0; i < key_cnt; i++)
+                bpt_key.erase(key[i], pos);
+        }
 
         current_book.modify(ISBN, name, author, keyword, price);
         file_write(current_book, pos, flag1, flag2, flag3, flag4);
@@ -391,7 +400,9 @@ namespace bm
                 {
                     v.push_back(now);
 
-                    if (fio.peek() == EOF) break;
+                    pos = bpt_name.get_nxt();
+                    if (pos == -1) break;
+                    fio.seekg(pos, ios :: beg);
                     fio.read(reinterpret_cast<char *>(&now), sizeof(now));
                 }
             }
@@ -407,7 +418,9 @@ namespace bm
                 {
                     v.push_back(now);
 
-                    if (fio.peek() == EOF) break;
+                    pos = bpt_aut.get_nxt();
+                    if (pos == -1) break;
+                    fio.seekg(pos, ios :: beg);
                     fio.read(reinterpret_cast<char *>(&now), sizeof(now));
                 }
             }
@@ -423,7 +436,9 @@ namespace bm
                 {
                     v.push_back(now);
 
-                    if (fio.peek() == EOF) break;
+                    pos = bpt_key.get_nxt();
+                    if (pos == -1) break;
+                    fio.seekg(pos, ios :: beg);
                     fio.read(reinterpret_cast<char *>(&now), sizeof(now));
                 }
             }
@@ -442,7 +457,6 @@ namespace bm
 
     void buy(const char* ISBN, int cnt)
     {
-        if (current_book.get_ISBN()[0] == '\0') return null_current_book();
         if (um :: current_user.get_pri() < um :: Customer) return buy_have_no_permission();
         
         book now; int pos = find_book(ISBN, now);

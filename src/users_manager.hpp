@@ -62,26 +62,61 @@ namespace um
 // --------------------------- debug area ---------------------------
     void Invalid() {puts("Invalid");}
 
-    void pwerror() {return Invalid();}
+    void pwerror() 
+    {
+        printf("password_error ");
+        return Invalid();
+    }
 
-    void logout_limit_exceed() {return Invalid();}
+    void logout_limit_exceed() 
+    {
+        printf("logout_limit_exceed ");
+        return Invalid();
+    }
 
-    void user_add_have_no_permission() {return Invalid();}
+    void user_add_have_no_permission() 
+    {
+        printf("user_add_have_no_permission ");
+        return Invalid();
+    }
 
-    void user_add_pri_error() {return Invalid();}
+    void user_add_pri_error() 
+    {
+        printf("user_add_pri_error ");
+        return Invalid();
+    }
     
-    void user_delete_have_no_permission() {return Invalid();}
+    void user_delete_have_no_permission()
+    {
+        printf("user_delete_have_no_permission ");
+        return Invalid();
+    }
 
-    void user_changepw_have_no_permission() {return Invalid();}
+    void user_changepw_have_no_permission()
+    {
+        printf("user_changepw_have_no_permission ");
+        return Invalid();
+    }
     
-    void user_changepw_wrong_opw() {return Invalid();}
+    void user_changepw_wrong_opw()
+    {
+        printf("user_changepw_wrong_opw ");
+        return Invalid();
+    }
 
-    void user_id_has_been_used() {return Invalid();}
+    void user_id_has_been_used() 
+    {
+        printf("user_id_has_been_used ");
+        return Invalid();
+    }
 
-    void user_delete_user_not_found() {return Invalid();}
+    void user_delete_user_not_found() 
+    {
+        printf("user_delete_user_not_found ");
+        return Invalid();
+    }
 
 // --------------------------- debug area ---------------------------
-
 
     void file_write(user &p)
     {

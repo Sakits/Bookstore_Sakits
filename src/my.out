@@ -1,6 +1,70 @@
-ISBN1 name1 author1 keyword1 10.00 0
-ISBN2 name1 author1 keyword1 10.00 0
-ISBN3 name1 author1 keyword1 10.00 0
-ISBN3 name1 author1 keyword1 20.00 0
-ISBN3 name1 author1 keyword1 20.00 0
-ISBN4 name1 author1 keyword1 10.00 0
+null_current_book Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+book_is_not_enough Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+buy_book_not_found Invalid
+buy_book_not_found Invalid
+
+select_have_no_permission Invalid
+null_current_book Invalid
+0.00
+978-0-88211-570-2	category	AmandaDean	frigate|hiatus|Syria	311.12	0
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+password_error Invalid
+show_have_no_permission Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+logout_limit_exceed Invalid
+
+book_is_not_enough Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+book_is_not_enough Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+buy_book_not_found Invalid
+119.05
+buy_book_not_found Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+select_have_no_permission Invalid
+null_current_book Invalid
+buy_book_not_found Invalid
+978-0-910812-86-3	abeyance		grandniece|nutritious|withheld	157.25	0
+
+
+select_have_no_permission Invalid
+null_current_book Invalid
+
