@@ -22,7 +22,7 @@ class BplusTree
                 int nxtptr = -1, preptr = -1, size = 0;
                 bool isleaf = 1;
                 int child[max_size + 1];
-                char key[max_size + 1][61];
+                char key[max_size + 1][70];
 
                 node() 
                 {
