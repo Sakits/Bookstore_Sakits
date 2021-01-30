@@ -85,7 +85,7 @@ namespace um
 
     void file_write(user &p)
     {
-        fio.seekp(0, ios :: end);
+        fio.seekg(0, ios :: end);
         int pos = fio.tellp();
         fio.write(reinterpret_cast<char *>(&p), sizeof(p));
         bpt_uid.insert(pos, p.get_uid());
@@ -102,7 +102,7 @@ namespace um
 
     void file_write(int pos, user &p)
     {
-        fio.seekp(pos, ios :: beg);
+        fio.seekg(pos, ios :: beg);
         fio.write(reinterpret_cast<char *>(&p), sizeof(p));
     }
 

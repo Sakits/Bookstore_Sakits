@@ -78,7 +78,7 @@ class BplusTree
         void file_write(const int pos, T &p)
         {
             // file_write_cnt++;
-            fio.seekp(pos, ios :: beg);
+            fio.seekg(pos, ios :: beg);
             fio.write(reinterpret_cast<char *>(&p), sizeof(p));
         }
 
@@ -116,7 +116,7 @@ class BplusTree
 
         int get_file_end()
         {
-            fio.seekp(0, ios :: end);
+            fio.seekg(0, ios :: end);
             int pos = fio.tellp();
             return pos;
         }

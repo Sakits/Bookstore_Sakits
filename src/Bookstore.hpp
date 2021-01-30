@@ -41,20 +41,20 @@ namespace finance
     void add_income(int delta)
     {
         income += delta;
-        fio.seekp(0, ios :: beg);
+        fio.seekg(0, ios :: beg);
         fio.write(reinterpret_cast<char *>(&income), sizeof(income));
-        fio.seekp(0, ios :: end);
+        fio.seekg(0, ios :: end);
         fio.write(reinterpret_cast<char *>(&delta), sizeof(delta));
     }    
 
     void add_cost(int delta)
     {
         cost += delta;
-        fio.seekp(sizeof(int), ios :: beg);
+        fio.seekg(sizeof(int), ios :: beg);
         fio.write(reinterpret_cast<char *>(&cost), sizeof(cost));
 
         delta = -delta;
-        fio.seekp(0, ios :: end);
+        fio.seekg(0, ios :: end);
         fio.write(reinterpret_cast<char *>(&delta), sizeof(delta));
     }
 
@@ -98,13 +98,13 @@ namespace bm
 
     void modify_wrong_infor() 
     {
-        // printf("modify_wrong_infor "); 
+        printf("modify_wrong_infor "); 
         return Invalid();
     }
 
     void wrong_show_type() 
     {
-        // printf("wrong_show_type "); 
+        printf("wrong_show_type "); 
         return Invalid();
     }
 
@@ -112,61 +112,62 @@ namespace bm
 
     void wrong_import_price() 
     {
-        // printf("wrong_import_price "); 
+        printf("wrong_import_price "); 
         return Invalid();
     }
 
     void select_have_no_permission() 
     {
-        // printf("select_have_no_permission "); 
+        // um :: current_user.print();
+        printf("select_have_no_permission "); 
         return Invalid();
     }
 
     void modify_have_no_permission() 
     {
-        // printf("modify_have_no_permission "); 
+        printf("modify_have_no_permission "); 
         return Invalid();
     }
 
     void import_have_no_permission() 
     {
-        // printf("import_have_no_permission "); 
+        printf("import_have_no_permission "); 
         return Invalid();
     }
 
     void show_have_no_permission() 
     {
-        // printf("show_have_no_permission "); 
+        printf("show_have_no_permission "); 
         return Invalid();
     }
 
     void buy_have_no_permission() 
     {
-        // printf("buy_have_no_permission "); 
+        printf("buy_have_no_permission "); 
         return Invalid();
     }
 
     void buy_book_not_found() 
     {
-        // printf("buy_book_not_found "); 
+        printf("buy_book_not_found "); 
         return Invalid();
     }
 
     void book_is_not_enough() 
     {
-        // printf("book_is_not_enough "); 
+        printf("book_is_not_enough "); 
         return Invalid();
     }
 
     void ISBN_already_exist() 
     {
-        // printf("ISBN_already_exist "); 
+        printf("ISBN_already_exist "); 
         return Invalid();
     }
 
     void null_current_book()
     {
-        // printf("null_current_book");
+        printf("null_current_book");
         return Invalid();
     }
 
@@ -218,10 +219,10 @@ namespace bm
     {
         if (pos == -1)
         {
-            fio.seekp(0, ios :: end);
+            fio.seekg(0, ios :: end);
             pos = fio.tellp();
         }
-        else fio.seekp(pos, ios :: beg);
+        else fio.seekg(pos, ios :: beg);
 
         if (isbn) bpt_isbn.insert(pos, now.get_ISBN());
         if (name) bpt_name.insert(pos, now.get_name());
@@ -232,6 +233,7 @@ namespace bm
             for (int i = 0; i < key_cnt; i++)
                 bpt_key.insert(pos, key[i]);
         }
+
         fio.write(reinterpret_cast<char *>(&now), sizeof(now));
     }
 
@@ -258,6 +260,7 @@ namespace bm
     void select(const char* ISBN)
     {
         // printf("select: current_user:"); um :: current_user.print();
+        // printf("select : %s\n", ISBN);
         if (um :: current_user.get_pri() < um :: Clerk) return select_have_no_permission();
         file_read(ISBN, current_book);
     }
@@ -342,7 +345,7 @@ namespace bm
         finance :: add_cost(cost);
         current_book.import(delta);
         int pos = bpt_isbn.query(current_book.get_ISBN());
-        fio.seekp(pos, ios :: beg);
+        fio.seekg(pos, ios :: beg);
         int cnt = current_book.get_cnt();
         fio.write(reinterpret_cast<char *>(&cnt), sizeof(cnt));
     }
@@ -424,7 +427,11 @@ namespace bm
                     fio.read(reinterpret_cast<char *>(&now), sizeof(now));
                 }
             }
-            else if (type == 6) finance :: show(cnt);
+            else if (type == 6) 
+            {
+                if (um :: current_user.get_pri() < um :: Root) return show_have_no_permission();
+                finance :: show(cnt);
+            }
             else return wrong_show_type();
         }
 
@@ -445,7 +452,7 @@ namespace bm
         finance :: add_income(now.get_price() * cnt);
         printf("%.2lf\n", now.get_price() * cnt / 100.0);
 
-        fio.seekp(pos, ios :: beg);
+        fio.seekg(pos, ios :: beg);
         cnt = now.get_cnt() - cnt;
         fio.write(reinterpret_cast<char *>(&cnt), sizeof(cnt));
     }
