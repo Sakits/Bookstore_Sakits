@@ -7,7 +7,7 @@ using namespace std;
 
 class BplusTree
 {
-    static const int max_size = 70, block_size = max_size / 2;
+    static const int max_size = 40, block_size = max_size / 2;
 
     public:
         int file_read_cnt = 0, file_write_cnt = 0;
@@ -21,12 +21,13 @@ class BplusTree
             public:
                 int nxtptr = -1, preptr = -1, size = 0;
                 bool isleaf = 1;
-                int child[max_size + 1];
+                int child[max_size + 1], mxpos[max_size + 1];
                 char key[max_size + 1][70];
 
                 node() 
                 {
                     memset(child, 0, sizeof(child));
+                    memset(mxpos, 0, sizeof(mxpos));
                     memset(key, 0, sizeof(key));
                 }
 
@@ -41,6 +42,7 @@ class BplusTree
 
                     memcpy(child, other.child, sizeof(child));
                     memcpy(key, other.key, sizeof(key));
+                    memcpy(mxpos, other.mxpos, sizeof(mxpos));
 
                     return *this;
                 }
@@ -86,7 +88,7 @@ class BplusTree
         {
             printf("p.isleaf:%d p.size:%d p.nxtptr:%d p.preptr:%d\n", p.isleaf, p.size, p.nxtptr, p.preptr);
             for (int i = 0; i < p.size; i++)
-                printf("i:%d child[i]:%d key[i]:%s\n", i, p.child[i], p.key[i]);
+                printf("i:%d child[i]:%d key[i]:%s mxpos[i]:%d \n", i, p.child[i], p.key[i], p.mxpos[i]);
             puts("");
         }
 
@@ -119,19 +121,27 @@ class BplusTree
             return pos;
         }
 
-        int get_pos(const node &now, const char* _key)
+        int get_pos(const node &now, const char* _key, int pos)
         {
             for (int i = 0; i < now.size; i++)
-            if (strcmp(now.key[i], _key) >= 0) return i;
+            {
+                int flag = strcmp(now.key[i], _key);
+                if (flag > 0 || (!flag && now.mxpos[i] > pos)) return i;
+            }
             return now.size;
         }
 
-        void insertone(node &now, const int pos, const int file_pos, const char* _key)
+        void insertone(node &now, const int pos, const int file_pos, const char* _key, int mxpos)
         {
             for (int i = now.size; i > pos; i--)
-                now.child[i] = now.child[i - 1], strcpy(now.key[i], now.key[i - 1]);
+            {
+                now.child[i] = now.child[i - 1];
+                strcpy(now.key[i], now.key[i - 1]);
+                now.mxpos[i] = now.mxpos[i - 1];
+            }
 
             now.child[pos] = file_pos;
+            now.mxpos[pos] = mxpos;
             strcpy(now.key[pos], _key);
             now.size++;
         }
@@ -139,12 +149,10 @@ class BplusTree
         void insert(int file_pos, const char* _key, int x = 0, node* const faptr = nullptr)
         {
             node now; file_read(x, now);
-            int pos = get_pos(now, _key);
+            int pos = get_pos(now, _key, file_pos);
 
             if (now.isleaf) 
-            {
-                insertone(now, pos, file_pos, _key);
-            }
+                insertone(now, pos, file_pos, _key, file_pos);
             else 
             {
                 pos -= (pos == now.size);
@@ -155,7 +163,8 @@ class BplusTree
             {
                 node &fa = *faptr;
                 for (int i = 0; i < fa.size; i++)
-                    if (fa.child[i] == x) strcpy(fa.key[i], now.key[now.size - 1]);
+                if (fa.child[i] == x) 
+                    strcpy(fa.key[i], now.key[now.size - 1]), fa.mxpos[i] = now.mxpos[now.size - 1];
             }
 
             if (now.size > max_size)
@@ -172,6 +181,7 @@ class BplusTree
                 {
                     nxt.child[i - block_size] = now.child[i];
                     strcpy(nxt.key[i - block_size], now.key[i]);
+                    nxt.mxpos[i - block_size] = now.mxpos[i];
                 }
 
                 file_write(nxt_pos, nxt);
@@ -189,6 +199,8 @@ class BplusTree
                     root.child[0] = x; root.child[1] = nxt_pos;
                     strcpy(root.key[0], now.key[now.size - 1]);
                     strcpy(root.key[1], nxt.key[nxt.size - 1]);
+                    root.mxpos[0] = now.mxpos[now.size - 1];
+                    root.mxpos[1] = nxt.mxpos[nxt.size - 1];
 
                     file_write(root_pos, root); 
                 }
@@ -203,10 +215,11 @@ class BplusTree
                             pos = i;
                             fa.child[i] = nxt_pos;
                             strcpy(fa.key[i], nxt.key[nxt.size - 1]);
+                            fa.mxpos[i] = nxt.mxpos[nxt.size - 1];
                             break;
                         }
 
-                    insertone(fa, pos, x, now.key[now.size - 1]);
+                    insertone(fa, pos, x, now.key[now.size - 1], now.mxpos[now.size - 1]);
                 }
             }
 
@@ -247,13 +260,14 @@ class BplusTree
                 {
                     now.child[i] = now.child[i + 1];
                     strcpy(now.key[i], now.key[i + 1]);
+                    now.mxpos[i] = now.mxpos[i + 1];
                 }
 
                 now.size--;
             }
             else
             {
-                int pos = get_pos(now, _key);
+                int pos = get_pos(now, _key, file_pos);
                 if (!erase(_key, file_pos, now.child[pos], &now)) return 0;
             }
 
@@ -283,12 +297,14 @@ class BplusTree
                     {
                         now.child[now.size] = nxt.child[0];
                         strcpy(now.key[now.size], nxt.key[0]);
+                        now.mxpos[now.size] = nxt.mxpos[0];
                         now.size++;
 
                         for (int i = 0; i < nxt.size - 1; i++)
                         {
                             nxt.child[i] = nxt.child[i + 1];
                             strcpy(nxt.key[i], nxt.key[i + 1]);
+                            nxt.mxpos[i] = nxt.mxpos[i + 1];
                         }
                         nxt.size--;
 
@@ -300,6 +316,7 @@ class BplusTree
                         {
                             now.child[now.size] = nxt.child[i];
                             strcpy(now.key[now.size], nxt.key[i]);
+                            now.mxpos[now.size] = nxt.mxpos[i];
                             now.size++;
                         }
 
@@ -312,6 +329,7 @@ class BplusTree
                                 {
                                     fa.child[j] = fa.child[j + 1];
                                     strcpy(fa.key[j], fa.key[j + 1]);
+                                    fa.mxpos[j] = fa.mxpos[j + 1];
                                 }
                                 fa.size--;
                                 break;
@@ -336,9 +354,11 @@ class BplusTree
                         {
                             now.child[i] = now.child[i - 1];
                             strcpy(now.key[i], now.key[i - 1]);
+                            now.mxpos[i] = now.mxpos[i - 1];
                         }
                         now.child[0] = pre.child[pre.size - 1];
                         strcpy(now.key[0], pre.key[pre.size - 1]);
+                        now.mxpos[0] = pre.mxpos[pre.size - 1];
                         now.size++;
                         pre.size--;
 
@@ -349,6 +369,7 @@ class BplusTree
                         if (fa.child[i] == now.preptr)
                         {
                             strcpy(fa.key[i], pre.key[pre.size - 1]);
+                            fa.mxpos[i] = pre.mxpos[pre.size - 1];
                             break;
                         }
                     }
@@ -358,12 +379,14 @@ class BplusTree
                         {
                             now.child[i + pre.size] = now.child[i];
                             strcpy(now.key[i + pre.size], now.key[i]);
+                            now.mxpos[i + pre.size] = now.mxpos[i];
                         }
 
                         for (int i = 0; i < pre.size; i++)
                         {
                             now.child[i] = pre.child[i];
                             strcpy(now.key[i], pre.key[i]);
+                            now.mxpos[i] = pre.mxpos[i];
                         }
                         now.size += pre.size;
 
@@ -376,6 +399,7 @@ class BplusTree
                                 {
                                     fa.child[j] = fa.child[j + 1];
                                     strcpy(fa.key[j], fa.key[j + 1]);
+                                    fa.mxpos[j] = fa.mxpos[j + 1];
                                 }
                                 fa.size--;
                                 break;
@@ -401,6 +425,7 @@ class BplusTree
                     if (fa.child[i] == x)
                     {
                         strcpy(fa.key[i], now.key[now.size - 1]);
+                        fa.mxpos[i] = now.mxpos[now.size - 1];
                         break;
                     }
                 }
@@ -423,7 +448,7 @@ class BplusTree
                 return -1;
             }
             
-            int pos = get_pos(now, _key);
+            int pos = get_pos(now, _key, -1);
             return (pos == now.size) ? -1 : query(_key, now.child[pos]);
         }
 };
