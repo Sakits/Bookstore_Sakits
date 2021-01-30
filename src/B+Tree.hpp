@@ -15,6 +15,7 @@ class BplusTree
     private:
         char file[30];
         fstream fio;
+        int nxt = -1;
 
         class node
         {
@@ -450,6 +451,16 @@ class BplusTree
             
             int pos = get_pos(now, _key, -1);
             return (pos == now.size) ? -1 : query(_key, now.child[pos]);
+        }
+
+        int get_nxt()
+        {
+            if (nxt == -1) return -1;
+
+            int ans = nxt;
+            fio.seekg(nxt, ios :: beg);
+            fio.read(reinterpret_cast<char *>(&nxt), sizeof(nxt));
+            return ans;
         }
 };
 
