@@ -1,5 +1,5 @@
 #include "B+Tree.hpp"
-BplusTree tr("storage");
+BplusTree tr("debugstorage");
 
 char s[100010][30];
 
@@ -9,15 +9,15 @@ int main()
     // cin >> n;
     // tr.time_test(n);
 
-    int seed = time(0);
+    int seed = 2333;
     srand(seed);
     // cout << seed << endl;
-    int n = 100;
+    int n = 100000;
     for (int i = 1; i <= n; i++)
     {
-        int len = 1 + rand() % 10;
+        int len = 10;
         for (int j = 0; j < len; j++)
-            s[i][j] = 'a' + rand() % 26;
+            s[i][j] = 'a';
         //    printf("in :: i:%d s[i]:%s\n", i, s[i]);
         tr.insert(i, s[i]);
         //  tr.dfs();
@@ -36,19 +36,20 @@ int main()
     //  tr.dfs();
     for (int i = 1; i <= n; i++)
     {
-        tr.erase(s[i]);
+        tr.erase(s[i], i);
         //  printf("delete: i:%d s[i]:%s\n", i, s[i]);
         //  tr.dfs();
-        for (int j = i + 1; j <= n; j++)
+        /*int x = tr.query(s[i]);
+        // for (int j = i + 1; j <= n; j++)
         {
-            int x = tr.query(s[j]);
-            if ( x == -1 || strcmp(s[j], s[x]))
+            // int x = tr.query(s[j]);
+            if (x != i + 1)
             {
-                printf("seed:%d i:%d j:%d %d\n", seed, i, j, x);
+                printf("seed:%d i:%d %d\n", seed, i, x);
                 puts("QAAQ");
                 return 0;
             }
-        }
+        }*/
     }
 
     // printf("%s\n", s[30]);

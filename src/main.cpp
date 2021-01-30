@@ -42,6 +42,7 @@ int StringtoInt(const char* s)
 void init()
 {
     um :: init();
+    bm :: init();
 }
 
 int main() 
