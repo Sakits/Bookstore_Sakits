@@ -39,10 +39,21 @@ int StringtoInt(const char* s)
     return s[0] - '0';
 }
 
+int StringtoInt2(const char* s)
+{
+    int len = strlen(s);
+    int num = 0;
+    for (int i = 0; i < len; i++)
+    if ('0' <= s[i] && s[i] <= '9') num = num * 10 + s[i] - '0';
+    else return -1;
+    return num;
+}
+
 void init()
 {
     um :: init();
     bm :: init();
+    finance :: init();
 }
 
 int main() 
@@ -86,6 +97,48 @@ int main()
         {
             if (argc == 3) um :: user_changepw(argv[1], argv[2]);
             else if (argc == 4) um :: user_changepw(argv[1], argv[3], argv[2]);
+            else Invalid();
+        }
+        else if (!strcmp(argv[0], "select"))
+        {
+            if (argc == 2) bm :: select(argv[1]);
+            else Invalid();
+        }
+        else if (!strcmp(argv[0], "modify"))
+        {
+            if (argc <= 6) bm :: modify(argc, argv);
+            else Invalid();
+        }
+        else if (!strcmp(argv[0], "show"))
+        {
+            if (argc == 1) bm :: show();
+            else if (argc == 2) bm :: show(argv[1]);
+            else if (argc == 3) 
+            {
+                int x = StringtoInt2(argv[2]);
+                if (x == -1) Invalid();
+                else bm :: show(argv[1], x);
+            }
+            else Invalid();
+        }
+        else if (!strcmp(argv[0], "import"))
+        {
+            if (argc == 3)
+            {
+                int x = StringtoInt2(argv[1]);
+                if (x == -1) Invalid();
+                else bm :: import(x, argv[2]);
+            }
+            else Invalid();
+        }
+        else if (!strcmp(argv[0], "buy")) 
+        {
+            if (argc == 3)
+            {
+                int x = StringtoInt2(argv[2]);
+                if (x == -1) Invalid();
+                else bm :: buy(argv[1], x);
+            }
             else Invalid();
         }
         else if (!strcmp(argv[0], "exit")) return 0;

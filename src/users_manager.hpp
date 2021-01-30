@@ -170,7 +170,7 @@ namespace um
     void user_register(const char* uid, const char*pw, const char* name)
     {
         if (bpt_uid.query(uid) != -1) return user_id_has_been_used();
-        user now(0, uid, pw, name);
+        user now(1, uid, pw, name);
         file_write(now);
     }
 
