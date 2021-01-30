@@ -15,13 +15,13 @@ class BplusTree
     private:
         char file[30];
         fstream fio;
-        int nxt = -1;
+        int prex = -1, prec, presize;
 
         class node
         {
             public:
                 int nxtptr = -1, preptr = -1, size = 0;
-                bool isleaf = 1;
+                int isleaf = 1;
                 int child[max_size + 1], mxpos[max_size + 1];
                 char key[max_size + 1][70];
 
@@ -445,7 +445,11 @@ class BplusTree
             if (now.isleaf)
             {
                 for (int i = 0; i < now.size; i++)
-                    if (!strcmp(now.key[i], _key)) return now.child[i];
+                    if (!strcmp(now.key[i], _key)) 
+                    {
+                        prex = x; prec = i; presize = now.size;
+                        return now.child[i];
+                    }
                 return -1;
             }
             
@@ -455,12 +459,30 @@ class BplusTree
 
         int get_nxt()
         {
-            if (nxt == -1) return -1;
+            if (prex == -1) return -1;
 
-            int ans = nxt;
-            fio.seekg(nxt, ios :: beg);
-            fio.read(reinterpret_cast<char *>(&nxt), sizeof(nxt));
-            return ans;
+            fio.seekg(prex, ios :: beg);
+            if (prec < presize - 1)
+            {
+                int ans;
+                prec++;
+                fio.seekg(sizeof(int) * 4 + sizeof(int) * prec, ios :: cur);
+                fio.read(reinterpret_cast<char *>(&ans), sizeof(ans));
+                return ans;
+            }
+            else
+            {
+                int nxt;
+                fio.read(reinterpret_cast<char *>(&nxt), sizeof(nxt));
+                if (nxt == -1) return -1;
+                prex = nxt; prec = 0; 
+                fio.seekg(sizeof(int), ios :: cur);
+                fio.read(reinterpret_cast<char *>(&presize), sizeof(presize));
+                fio.seekg(sizeof(int), ios :: cur);
+                int ans;
+                fio.read(reinterpret_cast<char *>(&ans), sizeof(ans));
+                return ans;
+            }
         }
 };
 
