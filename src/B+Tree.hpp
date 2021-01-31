@@ -15,7 +15,7 @@ class BplusTree
     private:
         char file[30];
         fstream fio;
-        int prex = -1, prec, presize;
+        int prex = -1, prec, presize, prenxt;
 
         class node
         {
@@ -448,7 +448,7 @@ class BplusTree
                 for (int i = 0; i < now.size; i++)
                     if (!strcmp(now.key[i], _key)) 
                     {
-                        prex = x; prec = i; presize = now.size;
+                        prex = x; prec = i; presize = now.size; prenxt = now.nxtptr;
                         return now.child[i];
                     }
                 return -1;
@@ -462,27 +462,21 @@ class BplusTree
         {
             if (prex == -1) return -1;
 
-            fio.seekg(prex, ios :: beg);
             if (prec < presize - 1)
             {
                 int ans;
                 prec++;
-                fio.seekg(sizeof(int) * 4 + sizeof(int) * prec, ios :: cur);
+                fio.seekg(prex + sizeof(int) * 4 + sizeof(int) * prec, ios :: beg);
                 fio.read(reinterpret_cast<char *>(&ans), sizeof(ans));
                 return ans;
             }
             else
             {
-                int nxt;
-                fio.read(reinterpret_cast<char *>(&nxt), sizeof(nxt));
-                if (nxt == -1) return -1;
-                prex = nxt; prec = 0; 
-                fio.seekg(nxt + sizeof(int) * 2, ios :: beg);
-                fio.read(reinterpret_cast<char *>(&presize), sizeof(presize));
-                fio.seekg(sizeof(int), ios :: cur);
-                int ans;
-                fio.read(reinterpret_cast<char *>(&ans), sizeof(ans));
-                return ans;
+                if (prenxt == -1) return -1;
+                node now; fio.seekg(prenxt, ios :: beg);
+                fio.read(reinterpret_cast<char *>(&now), sizeof(now));
+                prex = prenxt; prec = 0; presize = now.size; prenxt = now.nxtptr; 
+                return now.child[0];
             }
         }
 };

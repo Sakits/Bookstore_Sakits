@@ -2,11 +2,14 @@
 #define _users_manager_hpp
 
 #include "B+Tree.hpp"
+#include "book.hpp"
 #include <vector>
 using namespace std;
 
 class user
 {
+    public:
+        int curbk = -1;
     private:
         int pri;
         char pw[31], name[31], uid[31];
@@ -24,6 +27,7 @@ class user
         {
             if (this == &other) return *this;
             pri = other.pri;
+            curbk = other.curbk;
             memcpy(pw, other.pw, sizeof(pw));
             memcpy(name, other.name, sizeof(name));
             memcpy(uid, other.uid, sizeof(uid));
@@ -35,6 +39,7 @@ class user
         void print()
         {
             printf("pri:%d\n", pri);
+            printf("curbook:%d\n", curbk);
             printf("pw:%s\nname:%s\nuid:%s\n",pw, name, uid);
             puts("");
         }
@@ -116,6 +121,11 @@ namespace um
         return Invalid();
     }
 
+    void delete_root()
+    {
+        return Invalid();
+    }
+
 // --------------------------- debug area ---------------------------
 
     void file_write(user &p)
@@ -150,7 +160,6 @@ namespace um
     void init()
     {
         log_st.clear();
-        log_st.push_back(current_user);
         fstream fin("storage_users", ios :: in | ios :: binary);
         if (!fin.is_open())
         {
@@ -174,24 +183,26 @@ namespace um
 
         // if (pw)
         // {
-        //     printf("%s\n", pw);
+        //     printf("pw :: %s\n", pw);
         //     now.print();
         // }
 
         if (!pw || now.check_pw(pw)) 
         {
-            log_st.push_back(now);
+            log_st.push_back(current_user);
             current_user = now;
         }
         else pwerror();
+
+        current_user.curbk = -1;
     }
 
     void logout()
     {
-        if (log_st.size() <= 1) return logout_limit_exceed();
+        if (!log_st.size()) return logout_limit_exceed();
 
-        log_st.pop_back();
         current_user = log_st.back();
+        log_st.pop_back();
     }
 
     void user_add(const char* uid, const char* pw, int pri, const char* name)
@@ -212,6 +223,7 @@ namespace um
     void user_delete(const char* uid)
     {
         if (current_user.get_pri() != Root) return user_delete_have_no_permission();
+        if (!strcmp(uid, "root")) return delete_root();
         if (!bpt_uid.erase(uid)) return user_delete_user_not_found();
     }
 
@@ -219,6 +231,7 @@ namespace um
     {
         if (current_user.get_pri() < Customer) return user_changepw_have_no_permission();
         if (!opw && current_user.get_pri() != Root) return user_changepw_have_no_permission();
+        
 
         user now; 
         int pos = bpt_uid.query(uid); 
@@ -234,4 +247,3 @@ namespace um
 }
 
 #endif
-

@@ -3,3 +3,7 @@
 /**/*.code-workspace
 /**/*.o
 /test
+/Data
+/src/*.py
+/src/*.sh
+/src/main

@@ -8,7 +8,8 @@
 
 namespace finance
 {
-    int income, cost;
+    typedef long long ll;
+    ll income, cost;
     fstream fio;
 
 // --------------------------- debug area ---------------------------
@@ -42,7 +43,7 @@ namespace finance
         fio.read(reinterpret_cast<char *>(&cost), sizeof(cost));
     }
 
-    void add_income(int delta)
+    void add_income(ll delta)
     {
         income += delta;
         fio.seekg(0, ios :: beg);
@@ -51,10 +52,10 @@ namespace finance
         fio.write(reinterpret_cast<char *>(&delta), sizeof(delta));
     }    
 
-    void add_cost(int delta)
+    void add_cost(ll delta)
     {
         cost += delta;
-        fio.seekg(sizeof(int), ios :: beg);
+        fio.seekg(sizeof(ll), ios :: beg);
         fio.write(reinterpret_cast<char *>(&cost), sizeof(cost));
 
         delta = -delta;
@@ -68,18 +69,17 @@ namespace finance
         else
         {
             fio.seekg(0, ios :: end);
-            int tot = fio.tellg() / sizeof(int) - 2;
+            int tot = (int)fio.tellg() / sizeof(ll) - 2;
             if (cnt > tot) return log_is_not_enough();
 
-            int pos = fio.tellg(); 
-            pos -= cnt * sizeof(int);
+            int pos = (int)fio.tellg() - cnt * sizeof(ll);
             fio.seekg(pos, ios :: beg);
-            int totin = 0, totout = 0, delta;
+            ll totin = 0, totout = 0;
+            ll delta[cnt]; fio.read(reinterpret_cast<char *>(&delta), sizeof(delta));
             for (int i = 0; i < cnt; i++)
             {
-                fio.read(reinterpret_cast<char *>(&delta), sizeof(delta));
-                if (delta >= 0) totin += delta;
-                else totout -= delta;
+                if (delta[i] >= 0) totin += delta[i];
+                else totout -= delta[i];
             }
 
             printf("+ %.2lf - %.2lf\n", totin / 100.0, totout / 100.0);
@@ -89,7 +89,6 @@ namespace finance
 
 namespace bm
 {
-    book current_book;
     int key_cnt;
     char key[61][61];
 
@@ -171,7 +170,13 @@ namespace bm
 
     void null_current_book()
     {
+        // um :: current_user.print();
         // printf("null_current_book ");
+        return Invalid();
+    }
+
+    void keyword_occur_more_than_once()
+    {
         return Invalid();
     }
 
@@ -190,7 +195,7 @@ namespace bm
         fio.open("storage_books", ios :: in | ios :: out | ios :: binary);
     }
 
-    void split_key(const char* keyword)
+    int split_key(const char* keyword)
     {
         key_cnt = 0; int len = strlen(keyword);
 
@@ -204,6 +209,14 @@ namespace bm
             key_cnt++;
             i = j;
         }
+
+        for (int i = 0; i < key_cnt; i++)
+        {
+            for (int j = i + 1; j < key_cnt; j++)
+                if (!strcmp(key[i], key[j])) return 0;
+        }
+
+        return 1;
     }
 
     bool check_keyword(const char* keyword, const char* _keyword)
@@ -219,7 +232,7 @@ namespace bm
         s[strlen(s) - 1] = '\0';
     }
 
-    void file_write(book &now, int pos = -1, bool isbn = 1, bool name = 1, bool author = 1, bool keyword = 1)
+    int file_write(book &now, int pos = -1, bool isbn = 1, bool name = 1, bool author = 1, bool keyword = 1)
     {
         if (pos == -1)
         {
@@ -239,17 +252,24 @@ namespace bm
         }
 
         fio.write(reinterpret_cast<char *>(&now), sizeof(now));
+        return pos;
     }
 
-    void file_read(const char* ISBN, book &now)
+    int file_read(const char* ISBN)
     {
         int pos = bpt_isbn.query(ISBN);
-        if (pos == -1) now.init(ISBN), file_write(now);
-        else 
+        if (pos == -1) 
         {
-            fio.seekg(pos, ios :: beg);
-            fio.read(reinterpret_cast<char *>(&now), sizeof(now));
+           book newbk; newbk.init(ISBN); 
+           return file_write(newbk);
         }
+        return pos;
+    }
+
+    void file_read(int pos, book &now)
+    {
+        fio.seekg(pos, ios :: beg);
+        fio.read(reinterpret_cast<char *>(&now), sizeof(now));
     }
 
     int find_book(const char* ISBN, book &now)
@@ -263,9 +283,8 @@ namespace bm
 
     void select(const char* ISBN)
     {
-        // printf("select: current_user:"); um :: current_user.print();
         if (um :: current_user.get_pri() < um :: Clerk) return select_have_no_permission();
-        file_read(ISBN, current_book);
+        um :: current_user.curbk = file_read(ISBN);
     }
 
     int get_type(const char* s)
@@ -302,7 +321,7 @@ namespace bm
 
     void modify(int argc, char (*argv)[100])
     {
-        if (current_book.get_ISBN()[0] == '\0') return null_current_book();
+        if (um :: current_user.curbk == -1) return null_current_book();
         // printf("modify: current_user:"); um :: current_user.print();
         if (um :: current_user.get_pri() < um :: Clerk) return modify_have_no_permission();
 
@@ -316,7 +335,11 @@ namespace bm
             if (type == 1 && !flag1) strcpy(ISBN, argv[i] + 6), flag1 = 1;
             else if (type == 2 && !flag2) cut(argv[i]), strcpy(name, argv[i] + 7), flag2 = 1;
             else if (type == 3 && !flag3) cut(argv[i]), strcpy(author, argv[i] + 9), flag3 = 1;
-            else if (type == 4 && !flag4) cut(argv[i]), strcpy(keyword, argv[i] + 10), flag4 = 1;
+            else if (type == 4 && !flag4) 
+            {
+                cut(argv[i]), strcpy(keyword, argv[i] + 10), flag4 = 1;
+                if (!split_key(keyword)) return keyword_occur_more_than_once();
+            }
             else if (type == 5 && price == -1)
             {
                 price = get_price(argv[i] + 7);
@@ -327,7 +350,9 @@ namespace bm
 
         if (flag1 && bpt_isbn.query(ISBN) != -1) return ISBN_already_exist();
 
-        int pos = bpt_isbn.query(current_book.get_ISBN());
+        book current_book; 
+        int pos = um :: current_user.curbk;
+        file_read(pos, current_book);
         if (flag1) bpt_isbn.erase(current_book.get_ISBN(), pos);
         if (flag2) bpt_name.erase(current_book.get_name(), pos);
         if (flag3) bpt_aut.erase(current_book.get_author(), pos);
@@ -338,26 +363,36 @@ namespace bm
                 bpt_key.erase(key[i], pos);
         }
 
-        
-
         current_book.modify(ISBN, name, author, keyword, price);
         file_write(current_book, pos, flag1, flag2, flag3, flag4);
     }
 
     void import(int delta, const char* s)
     {
-        if (current_book.get_ISBN()[0] == '\0') return null_current_book();
+        if (um :: current_user.curbk == -1) return null_current_book();
         // printf("import: current_user:"); um :: current_user.print();
         if (um :: current_user.get_pri() < um :: Clerk) return import_have_no_permission();
+
+        // um :: current_user.print();
+        // book current_book;
+        // file_read(um :: current_user.curbk, current_book);
+        // current_book.print();
+        // um :: current_user.bk.print();
+        // printf("import delta:%d\n", delta);
+        // bpt_isbn.dfs();
 
         int cost = get_price(s);
         if (cost == -1) return wrong_import_price();
         finance :: add_cost(cost);
-        current_book.import(delta);
-        int pos = bpt_isbn.query(current_book.get_ISBN());
+
+        int pos = um :: current_user.curbk, cnt;
         fio.seekg(pos, ios :: beg);
-        int cnt = current_book.get_cnt();
+        fio.read(reinterpret_cast<char *>(&cnt), sizeof(cnt));
+        cnt += delta;
+        fio.seekg(pos, ios :: beg);
         fio.write(reinterpret_cast<char *>(&cnt), sizeof(cnt));
+        // printf("import delta:%d\n", delta);
+        // current_book.print();
     }
 
     void show(char* ty = nullptr, int cnt = 0)
@@ -463,10 +498,13 @@ namespace bm
         
         book now; int pos = find_book(ISBN, now);
         if (pos == -1) return buy_book_not_found();
+
+        // printf("ISBN:%s cnt:%d nowcnt:%d ", ISBN, cnt, now.get_cnt());
+
         if (cnt > now.get_cnt()) return book_is_not_enough();
 
-        finance :: add_income(now.get_price() * cnt);
-        printf("%.2lf\n", now.get_price() * cnt / 100.0);
+        finance :: add_income(1ll * now.get_price() * cnt);
+        printf("%.2lf\n", 1ll * now.get_price() * cnt / 100.0);
 
         fio.seekg(pos, ios :: beg);
         cnt = now.get_cnt() - cnt;

@@ -49,8 +49,6 @@ class book
             if (~_price) price = _price;
         }
 
-        void import(int delta) {cnt += delta;}
-
         void print()
         {
             printf("%s\t%s\t%s\t%s\t%.2lf\t%d\n", ISBN, name, author, keyword, price / 100.0, cnt);
