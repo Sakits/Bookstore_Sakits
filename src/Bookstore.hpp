@@ -15,7 +15,11 @@ namespace finance
 
     void Invalid() {puts("Invalid");}
 
-    void log_is_not_enough() {return Invalid();}
+    void log_is_not_enough() 
+    {
+        // puts("log_is_not_enough ");
+        return Invalid();
+    }
 
 // --------------------------- debug area ---------------------------
 
@@ -41,20 +45,20 @@ namespace finance
     void add_income(int delta)
     {
         income += delta;
-        fio.seekp(0, ios :: beg);
+        fio.seekg(0, ios :: beg);
         fio.write(reinterpret_cast<char *>(&income), sizeof(income));
-        fio.seekp(0, ios :: end);
+        fio.seekg(0, ios :: end);
         fio.write(reinterpret_cast<char *>(&delta), sizeof(delta));
     }    
 
     void add_cost(int delta)
     {
         cost += delta;
-        fio.seekp(sizeof(int), ios :: beg);
+        fio.seekg(sizeof(int), ios :: beg);
         fio.write(reinterpret_cast<char *>(&cost), sizeof(cost));
 
         delta = -delta;
-        fio.seekp(0, ios :: end);
+        fio.seekg(0, ios :: end);
         fio.write(reinterpret_cast<char *>(&delta), sizeof(delta));
     }
 
@@ -118,6 +122,7 @@ namespace bm
 
     void select_have_no_permission() 
     {
+        // um :: current_user.print();
         // printf("select_have_no_permission "); 
         return Invalid();
     }
@@ -166,7 +171,7 @@ namespace bm
 
     void null_current_book()
     {
-        // printf("null_current_book");
+        // printf("null_current_book ");
         return Invalid();
     }
 
@@ -218,10 +223,10 @@ namespace bm
     {
         if (pos == -1)
         {
-            fio.seekp(0, ios :: end);
+            fio.seekg(0, ios :: end);
             pos = fio.tellp();
         }
-        else fio.seekp(pos, ios :: beg);
+        else fio.seekg(pos, ios :: beg);
 
         if (isbn) bpt_isbn.insert(pos, now.get_ISBN());
         if (name) bpt_name.insert(pos, now.get_name());
@@ -232,6 +237,7 @@ namespace bm
             for (int i = 0; i < key_cnt; i++)
                 bpt_key.insert(pos, key[i]);
         }
+
         fio.write(reinterpret_cast<char *>(&now), sizeof(now));
     }
 
@@ -302,7 +308,7 @@ namespace bm
 
         char ISBN[70] = "", name[70] = "", author[70] = "", keyword[70] = "";
         int price = -1;
-        
+
         bool flag1 = 0, flag2 = 0, flag3 = 0, flag4 = 0;
         for (int i = 1; i < argc; i++)
         {
@@ -325,7 +331,14 @@ namespace bm
         if (flag1) bpt_isbn.erase(current_book.get_ISBN(), pos);
         if (flag2) bpt_name.erase(current_book.get_name(), pos);
         if (flag3) bpt_aut.erase(current_book.get_author(), pos);
-        if (flag4) bpt_key.erase(current_book.get_keyword(), pos);
+        if (flag4) 
+        {
+            split_key(current_book.get_keyword());
+            for (int i = 0; i < key_cnt; i++)
+                bpt_key.erase(key[i], pos);
+        }
+
+        
 
         current_book.modify(ISBN, name, author, keyword, price);
         file_write(current_book, pos, flag1, flag2, flag3, flag4);
@@ -342,7 +355,7 @@ namespace bm
         finance :: add_cost(cost);
         current_book.import(delta);
         int pos = bpt_isbn.query(current_book.get_ISBN());
-        fio.seekp(pos, ios :: beg);
+        fio.seekg(pos, ios :: beg);
         int cnt = current_book.get_cnt();
         fio.write(reinterpret_cast<char *>(&cnt), sizeof(cnt));
     }
@@ -388,7 +401,9 @@ namespace bm
                 {
                     v.push_back(now);
 
-                    if (fio.peek() == EOF) break;
+                    pos = bpt_name.get_nxt();
+                    if (pos == -1) break;
+                    fio.seekg(pos, ios :: beg);
                     fio.read(reinterpret_cast<char *>(&now), sizeof(now));
                 }
             }
@@ -404,7 +419,9 @@ namespace bm
                 {
                     v.push_back(now);
 
-                    if (fio.peek() == EOF) break;
+                    pos = bpt_aut.get_nxt();
+                    if (pos == -1) break;
+                    fio.seekg(pos, ios :: beg);
                     fio.read(reinterpret_cast<char *>(&now), sizeof(now));
                 }
             }
@@ -420,22 +437,28 @@ namespace bm
                 {
                     v.push_back(now);
 
-                    if (fio.peek() == EOF) break;
+                    pos = bpt_key.get_nxt();
+                    if (pos == -1) break;
+                    fio.seekg(pos, ios :: beg);
                     fio.read(reinterpret_cast<char *>(&now), sizeof(now));
                 }
             }
-            else if (type == 6) finance :: show(cnt);
+            else if (type == 6) 
+            {
+                if (um :: current_user.get_pri() < um :: Root) return show_have_no_permission();
+                finance :: show(cnt);
+            }
             else return wrong_show_type();
         }
 
         sort(v.begin(), v.end());
+        v.erase(unique(v.begin(), v.end()), v.end());
         for (int i = 0; i < v.size(); i++)
             v[i].print();
     }
 
     void buy(const char* ISBN, int cnt)
     {
-        if (current_book.get_ISBN()[0] == '\0') return null_current_book();
         if (um :: current_user.get_pri() < um :: Customer) return buy_have_no_permission();
         
         book now; int pos = find_book(ISBN, now);
@@ -445,7 +468,7 @@ namespace bm
         finance :: add_income(now.get_price() * cnt);
         printf("%.2lf\n", now.get_price() * cnt / 100.0);
 
-        fio.seekp(pos, ios :: beg);
+        fio.seekg(pos, ios :: beg);
         cnt = now.get_cnt() - cnt;
         fio.write(reinterpret_cast<char *>(&cnt), sizeof(cnt));
     }

@@ -15,12 +15,13 @@ class BplusTree
     private:
         char file[30];
         fstream fio;
+        int prex = -1, prec, presize;
 
         class node
         {
             public:
                 int nxtptr = -1, preptr = -1, size = 0;
-                bool isleaf = 1;
+                int isleaf = 1;
                 int child[max_size + 1], mxpos[max_size + 1];
                 char key[max_size + 1][70];
 
@@ -78,7 +79,7 @@ class BplusTree
         void file_write(const int pos, T &p)
         {
             // file_write_cnt++;
-            fio.seekp(pos, ios :: beg);
+            fio.seekg(pos, ios :: beg);
             fio.write(reinterpret_cast<char *>(&p), sizeof(p));
         }
 
@@ -116,7 +117,7 @@ class BplusTree
 
         int get_file_end()
         {
-            fio.seekp(0, ios :: end);
+            fio.seekg(0, ios :: end);
             int pos = fio.tellp();
             return pos;
         }
@@ -126,7 +127,7 @@ class BplusTree
             for (int i = 0; i < now.size; i++)
             {
                 int flag = strcmp(now.key[i], _key);
-                if (flag > 0 || (!flag && now.mxpos[i] > pos)) return i;
+                if (flag > 0 || (!flag && now.mxpos[i] >= pos)) return i;
             }
             return now.size;
         }
@@ -270,6 +271,7 @@ class BplusTree
                 int pos = get_pos(now, _key, file_pos);
                 if (!erase(_key, file_pos, now.child[pos], &now)) return 0;
             }
+
 
             int nxtptr = -1, preptr = -1;
             if (faptr)
@@ -444,12 +446,44 @@ class BplusTree
             if (now.isleaf)
             {
                 for (int i = 0; i < now.size; i++)
-                    if (!strcmp(now.key[i], _key)) return now.child[i];
+                    if (!strcmp(now.key[i], _key)) 
+                    {
+                        prex = x; prec = i; presize = now.size;
+                        return now.child[i];
+                    }
                 return -1;
             }
             
             int pos = get_pos(now, _key, -1);
             return (pos == now.size) ? -1 : query(_key, now.child[pos]);
+        }
+
+        int get_nxt()
+        {
+            if (prex == -1) return -1;
+
+            fio.seekg(prex, ios :: beg);
+            if (prec < presize - 1)
+            {
+                int ans;
+                prec++;
+                fio.seekg(sizeof(int) * 4 + sizeof(int) * prec, ios :: cur);
+                fio.read(reinterpret_cast<char *>(&ans), sizeof(ans));
+                return ans;
+            }
+            else
+            {
+                int nxt;
+                fio.read(reinterpret_cast<char *>(&nxt), sizeof(nxt));
+                if (nxt == -1) return -1;
+                prex = nxt; prec = 0; 
+                fio.seekg(nxt + sizeof(int) * 2, ios :: beg);
+                fio.read(reinterpret_cast<char *>(&presize), sizeof(presize));
+                fio.seekg(sizeof(int), ios :: cur);
+                int ans;
+                fio.read(reinterpret_cast<char *>(&ans), sizeof(ans));
+                return ans;
+            }
         }
 };
 

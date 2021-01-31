@@ -9,7 +9,7 @@ class user
 {
     private:
         int pri;
-        char pw[30], name[30], uid[30];
+        char pw[31], name[31], uid[31];
 
     public:
 
@@ -62,30 +62,65 @@ namespace um
 // --------------------------- debug area ---------------------------
     void Invalid() {puts("Invalid");}
 
-    void pwerror() {return Invalid();}
+    void pwerror() 
+    {
+        // printf("password_error ");
+        return Invalid();
+    }
 
-    void logout_limit_exceed() {return Invalid();}
+    void logout_limit_exceed() 
+    {
+        // printf("logout_limit_exceed ");
+        return Invalid();
+    }
 
-    void user_add_have_no_permission() {return Invalid();}
+    void user_add_have_no_permission() 
+    {
+        // printf("user_add_have_no_permission ");
+        return Invalid();
+    }
 
-    void user_add_pri_error() {return Invalid();}
+    void user_add_pri_error() 
+    {
+        // printf("user_add_pri_error ");
+        return Invalid();
+    }
     
-    void user_delete_have_no_permission() {return Invalid();}
+    void user_delete_have_no_permission()
+    {
+        // printf("user_delete_have_no_permission ");
+        return Invalid();
+    }
 
-    void user_changepw_have_no_permission() {return Invalid();}
+    void user_changepw_have_no_permission()
+    {
+        // printf("user_changepw_have_no_permission ");
+        return Invalid();
+    }
     
-    void user_changepw_wrong_opw() {return Invalid();}
+    void user_changepw_wrong_opw()
+    {
+        // printf("user_changepw_wrong_opw ");
+        return Invalid();
+    }
 
-    void user_id_has_been_used() {return Invalid();}
+    void user_id_has_been_used() 
+    {
+        // printf("user_id_has_been_used ");
+        return Invalid();
+    }
 
-    void user_delete_user_not_found() {return Invalid();}
+    void user_delete_user_not_found() 
+    {
+        // printf("user_delete_user_not_found ");
+        return Invalid();
+    }
 
 // --------------------------- debug area ---------------------------
 
-
     void file_write(user &p)
     {
-        fio.seekp(0, ios :: end);
+        fio.seekg(0, ios :: end);
         int pos = fio.tellp();
         fio.write(reinterpret_cast<char *>(&p), sizeof(p));
         bpt_uid.insert(pos, p.get_uid());
@@ -102,7 +137,7 @@ namespace um
 
     void file_write(int pos, user &p)
     {
-        fio.seekp(pos, ios :: beg);
+        fio.seekg(pos, ios :: beg);
         fio.write(reinterpret_cast<char *>(&p), sizeof(p));
     }
 
@@ -167,7 +202,7 @@ namespace um
         file_write(now);
     }
 
-    void user_register(const char* uid, const char*pw, const char* name)
+    void user_register(const char* uid, const char* pw, const char* name)
     {
         if (bpt_uid.query(uid) != -1) return user_id_has_been_used();
         user now(1, uid, pw, name);
