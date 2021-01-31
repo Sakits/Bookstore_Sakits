@@ -127,7 +127,7 @@ class BplusTree
             for (int i = 0; i < now.size; i++)
             {
                 int flag = strcmp(now.key[i], _key);
-                if (flag > 0 || (!flag && now.mxpos[i] > pos)) return i;
+                if (flag > 0 || (!flag && now.mxpos[i] >= pos)) return i;
             }
             return now.size;
         }
@@ -271,6 +271,7 @@ class BplusTree
                 int pos = get_pos(now, _key, file_pos);
                 if (!erase(_key, file_pos, now.child[pos], &now)) return 0;
             }
+
 
             int nxtptr = -1, preptr = -1;
             if (faptr)
