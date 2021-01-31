@@ -7,7 +7,7 @@ string s;
 
 void Invalid() 
 {
-    puts("main"); 
+    // puts("main"); 
     puts("Invalid");
 }
 
@@ -17,6 +17,8 @@ bool get_line()
 
     if (!getline(cin, s)) return 0;
     int len = s.length();
+
+    // cout << s << endl;
 
     for (int i = 0; i < len; i++)
     if (s[i] != ' ' && s[i] != '\n')
@@ -68,7 +70,7 @@ void init()
 
 int main() 
 {
-    init();
+    init(); 
     while (get_line())
     {
         if (!argc) Invalid();

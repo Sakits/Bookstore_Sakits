@@ -17,7 +17,7 @@ namespace finance
 
     void log_is_not_enough() 
     {
-        puts("log_is_not_enough ");
+        // puts("log_is_not_enough ");
         return Invalid();
     }
 
@@ -102,13 +102,13 @@ namespace bm
 
     void modify_wrong_infor() 
     {
-        printf("modify_wrong_infor "); 
+        // printf("modify_wrong_infor "); 
         return Invalid();
     }
 
     void wrong_show_type() 
     {
-        printf("wrong_show_type "); 
+        // printf("wrong_show_type "); 
         return Invalid();
     }
 
@@ -116,62 +116,62 @@ namespace bm
 
     void wrong_import_price() 
     {
-        printf("wrong_import_price "); 
+        // printf("wrong_import_price "); 
         return Invalid();
     }
 
     void select_have_no_permission() 
     {
         // um :: current_user.print();
-        printf("select_have_no_permission "); 
+        // printf("select_have_no_permission "); 
         return Invalid();
     }
 
     void modify_have_no_permission() 
     {
-        printf("modify_have_no_permission "); 
+        // printf("modify_have_no_permission "); 
         return Invalid();
     }
 
     void import_have_no_permission() 
     {
-        printf("import_have_no_permission "); 
+        // printf("import_have_no_permission "); 
         return Invalid();
     }
 
     void show_have_no_permission() 
     {
-        printf("show_have_no_permission "); 
+        // printf("show_have_no_permission "); 
         return Invalid();
     }
 
     void buy_have_no_permission() 
     {
-        printf("buy_have_no_permission "); 
+        // printf("buy_have_no_permission "); 
         return Invalid();
     }
 
     void buy_book_not_found() 
     {
-        printf("buy_book_not_found "); 
+        // printf("buy_book_not_found "); 
         return Invalid();
     }
 
     void book_is_not_enough() 
     {
-        printf("book_is_not_enough "); 
+        // printf("book_is_not_enough "); 
         return Invalid();
     }
 
     void ISBN_already_exist() 
     {
-        printf("ISBN_already_exist "); 
+        // printf("ISBN_already_exist "); 
         return Invalid();
     }
 
     void null_current_book()
     {
-        printf("null_current_book ");
+        // printf("null_current_book ");
         return Invalid();
     }
 
@@ -264,7 +264,6 @@ namespace bm
     void select(const char* ISBN)
     {
         // printf("select: current_user:"); um :: current_user.print();
-        // printf("select : %s\n", ISBN);
         if (um :: current_user.get_pri() < um :: Clerk) return select_have_no_permission();
         file_read(ISBN, current_book);
     }
@@ -309,7 +308,7 @@ namespace bm
 
         char ISBN[70] = "", name[70] = "", author[70] = "", keyword[70] = "";
         int price = -1;
-        
+
         bool flag1 = 0, flag2 = 0, flag3 = 0, flag4 = 0;
         for (int i = 1; i < argc; i++)
         {
@@ -338,6 +337,8 @@ namespace bm
             for (int i = 0; i < key_cnt; i++)
                 bpt_key.erase(key[i], pos);
         }
+
+        
 
         current_book.modify(ISBN, name, author, keyword, price);
         file_write(current_book, pos, flag1, flag2, flag3, flag4);
@@ -451,6 +452,7 @@ namespace bm
         }
 
         sort(v.begin(), v.end());
+        v.erase(unique(v.begin(), v.end()), v.end());
         for (int i = 0; i < v.size(); i++)
             v[i].print();
     }

@@ -11,6 +11,11 @@ class book
             return strcmp(a.ISBN, b.ISBN) < 0;
         }
 
+        friend bool operator == (const book &a, const book & b)
+        {
+            return !strcmp(a.ISBN, b.ISBN);
+        }
+
     private:
         int cnt, price;
         char ISBN[70], name[70], author[70], keyword[70];
