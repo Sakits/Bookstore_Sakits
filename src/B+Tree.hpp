@@ -476,7 +476,7 @@ class BplusTree
                 fio.read(reinterpret_cast<char *>(&nxt), sizeof(nxt));
                 if (nxt == -1) return -1;
                 prex = nxt; prec = 0; 
-                fio.seekg(sizeof(int), ios :: cur);
+                fio.seekg(nxt + sizeof(int) * 2, ios :: beg);
                 fio.read(reinterpret_cast<char *>(&presize), sizeof(presize));
                 fio.seekg(sizeof(int), ios :: cur);
                 int ans;
