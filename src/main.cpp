@@ -1,5 +1,12 @@
 #include "Bookstore.hpp"
 
+#include <iostream>
+#include <cstring>
+#include <cstdio>
+#include <algorithm>
+#include <cmath>
+
+
 const int maxn = 100;
 int argc;
 char argv[maxn][maxn];

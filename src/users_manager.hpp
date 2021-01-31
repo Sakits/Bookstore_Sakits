@@ -3,6 +3,11 @@
 
 #include "B+Tree.hpp"
 #include "book.hpp"
+#include <iostream>
+#include <cstring>
+#include <cstdio>
+#include <algorithm>
+#include <cmath>
 #include <vector>
 using namespace std;
 

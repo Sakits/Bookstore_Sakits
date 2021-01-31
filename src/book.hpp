@@ -2,6 +2,11 @@
 #define _book_hpp
 
 #include <iostream>
+#include <cstring>
+#include <cstdio>
+#include <algorithm>
+#include <cmath>
+
 using namespace std;
 
 class book

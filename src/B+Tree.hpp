@@ -2,6 +2,11 @@
 #define _BplusTree_h
 
 #include <iostream>
+#include <cstring>
+#include <cstdio>
+#include <algorithm>
+#include <cmath>
+
 #include <fstream>
 using namespace std;
 

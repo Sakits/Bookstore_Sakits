@@ -3,7 +3,11 @@
 
 #include "users_manager.hpp"
 #include "book.hpp"
-
+#include <iostream>
+#include <cstring>
+#include <cstdio>
+#include <algorithm>
+#include <cmath>
 #include <vector>
 
 namespace finance
