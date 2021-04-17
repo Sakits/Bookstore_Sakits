@@ -66,7 +66,7 @@ namespace um
     enum privilege {Base = 0, Customer = 1, Clerk = 3, Root = 7};
     vector <user> log_st;
     fstream fio;
-    BplusTree bpt_uid("index_users_uid");
+    BPlusTree bpt_uid("index_users_uid");
     user current_user;
 
 // --------------------------- debug area ---------------------------
@@ -138,7 +138,7 @@ namespace um
         fio.seekg(0, ios :: end);
         int pos = fio.tellp();
         fio.write(reinterpret_cast<char *>(&p), sizeof(p));
-        bpt_uid.insert(pos, p.get_uid());
+        bpt_uid.insert(p.get_uid(), pos);
     }
 
     bool file_read(const char* uid, user &p)
