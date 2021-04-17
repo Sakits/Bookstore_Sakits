@@ -97,7 +97,7 @@ namespace bm
     char key[61][61];
 
     fstream fio;
-    BplusTree bpt_isbn("index_books_isbn"), bpt_name("index_books_name"), bpt_aut("index_books_author"), bpt_key("index_books_keyword");
+    BPlusTree bpt_isbn("index_books_isbn"), bpt_name("index_books_name"), bpt_aut("index_books_author"), bpt_key("index_books_keyword");
 
 // --------------------------- debug area ---------------------------
 
@@ -245,14 +245,14 @@ namespace bm
         }
         else fio.seekg(pos, ios :: beg);
 
-        if (isbn) bpt_isbn.insert(pos, now.get_ISBN());
-        if (name) bpt_name.insert(pos, now.get_name());
-        if (author) bpt_aut.insert(pos, now.get_author());
+        if (isbn) bpt_isbn.insert(now.get_ISBN(), pos);
+        if (name) bpt_name.insert(now.get_name(), pos);
+        if (author) bpt_aut.insert(now.get_author(), pos);
         if (keyword)
         {
             split_key(now.get_keyword());
             for (int i = 0; i < key_cnt; i++)
-                bpt_key.insert(pos, key[i]);
+                bpt_key.insert(key[i], pos);
         }
 
         fio.write(reinterpret_cast<char *>(&now), sizeof(now));
@@ -440,7 +440,7 @@ namespace bm
                 {
                     v.push_back(now);
 
-                    pos = bpt_name.get_nxt();
+                    pos = bpt_name.get_next();
                     if (pos == -1) break;
                     fio.seekg(pos, ios :: beg);
                     fio.read(reinterpret_cast<char *>(&now), sizeof(now));
@@ -458,7 +458,7 @@ namespace bm
                 {
                     v.push_back(now);
 
-                    pos = bpt_aut.get_nxt();
+                    pos = bpt_aut.get_next();
                     if (pos == -1) break;
                     fio.seekg(pos, ios :: beg);
                     fio.read(reinterpret_cast<char *>(&now), sizeof(now));
@@ -476,7 +476,7 @@ namespace bm
                 {
                     v.push_back(now);
 
-                    pos = bpt_key.get_nxt();
+                    pos = bpt_key.get_next();
                     if (pos == -1) break;
                     fio.seekg(pos, ios :: beg);
                     fio.read(reinterpret_cast<char *>(&now), sizeof(now));
