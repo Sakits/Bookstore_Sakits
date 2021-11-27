@@ -1,7 +1,7 @@
 #ifndef _users_manager_hpp
 #define _users_manager_hpp
 
-#include "B+Tree.hpp"
+#include "BPlusTree.hpp"
 #include "book.hpp"
 #include <iostream>
 #include <cstring>
@@ -237,7 +237,6 @@ namespace um
         if (current_user.get_pri() < Customer) return user_changepw_have_no_permission();
         if (!opw && current_user.get_pri() != Root) return user_changepw_have_no_permission();
         
-
         user now; 
         int pos = bpt_uid.query(uid); 
         if (pos == -1) return Invalid();

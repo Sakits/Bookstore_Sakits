@@ -16,21 +16,21 @@ def cleanAll():
 
 def run_Basic_Case(id):
     if id <= 6:
-        os.system('gtimeout ' + str(time_Limit) + 's ' + './main < Data/BasicDataSet/testcase' + str(id) + '.txt >> output.txt')
+        os.system('time ./main < Data/BasicDataSet/testcase' + str(id) + '.txt >> output.txt')
         #return filecmp.cmp('Data/BasicDataSet/testcase' + str(id) + '_ans.txt', 'output.txt')
         if os.system ('diff output.txt ' + 'Data/BasicDataSet/testcase' + str(id) + '_ans.txt'):
             print (id)
             return 0
     if id == 7:
         for i in range(1, 4):
-            os.system('gtimeout ' + str(time_Limit) + 's ' + './main < Data/BasicDataSet/testcase7/' + str(i) + '.txt >> output.txt')
+            os.system('time ./main < Data/BasicDataSet/testcase7/' + str(i) + '.txt >> output.txt')
         #return filecmp.cmp('Data/BasicDataSet/testcase7/ans.txt', 'output.txt')
         if os.system ('diff output.txt ' + 'Data/BasicDataSet/testcase7/ans.txt'):
             print (id)
             return 0
     if id == 8:
         for i in range(1, 101):
-            os.system('gtimeout ' + str(time_Limit) + 's ' + './main < Data/BasicDataSet/testcase8/' + str(i) + '.txt >> output.txt')
+            os.system('time ./main < Data/BasicDataSet/testcase8/' + str(i) + '.txt >> output.txt')
         if os.system ('diff output.txt ' + 'Data/BasicDataSet/testcase8/ans.txt'):
             print (id)
             return 0
@@ -53,7 +53,7 @@ def run_Basic():
 def run_Advanced_Case(id):
     if id != 3:
         for i in range(1, 11):
-            os.system('gtimeout ' + str(time_Limit) + 's ' + './main < Data/AdvancedDataSet/testcase' + str(id) + '/' + str(i) + '.in > output.txt')
+            os.system('time ./main < Data/AdvancedDataSet/testcase' + str(id) + '/' + str(i) + '.in > output.txt')
             #if not filecmp.cmp('Data/AdvancedDataSet/testcase' + str(id) + '/' + str(i) + '.out', 'output.txt'):
                 #return 0
             if os.system ('diff output.txt ' + 'Data/AdvancedDataSet/testcase' + str(id) + '/' + str(i) + '.out'):
@@ -61,7 +61,7 @@ def run_Advanced_Case(id):
                 return 0
     else:
         for i in range(1, 6):
-            os.system('gtimeout ' + str(time_Limit) + 's ' + './main < Data/AdvancedDataSet/testcase' + str(id) + '/' + str(i) + '.in > output.txt')
+            os.system('time ./main < Data/AdvancedDataSet/testcase' + str(id) + '/' + str(i) + '.in > output.txt')
             if not filecmp.cmp('Data/AdvancedDataSet/testcase' + str(id) + '/' + str(i) + '.out', 'output.txt'):
                 print (id, i) ;
                 return 0
@@ -82,7 +82,7 @@ def run_Advanced():
 
 def run_Complex_Case(id):
     for i in range(1, 11):
-        os.system('gtimeout ' + str(time_Limit) + 's ' + './main < Data/ComplexDataSet/testcase' + str(id) + '/' + str(i) + '.in > output.txt')
+        os.system('time ./main < Data/ComplexDataSet/testcase' + str(id) + '/' + str(i) + '.in > output.txt')
         #if not filecmp.cmp('Data/ComplexDataSet/testcase' + str(id) + '/' + str(i) + '.out', 'output.txt'):
             #return 0
         if os.system ('diff output.txt ' + 'Data/ComplexDataSet/testcase' + str(id) + '/' + str(i) + '.out'):
@@ -105,7 +105,7 @@ def run_Complex():
 
 def run_Insider_Case(id):
     for i in range(1, 11):
-        os.system('gtimeout ' + str(time_Limit) + 's ' + './main < Data/InsiderDataSet/testcase' + str(id) + '/' + str(i) + '.in > output.txt')
+        os.system('time ./main < Data/InsiderDataSet/testcase' + str(id) + '/' + str(i) + '.in > output.txt')
         if not filecmp.cmp('Data/InsiderDataSet/testcase' + str(id) + '/' + str(i) + '.out', 'output.txt'):
             return 0
     return 1
@@ -124,7 +124,7 @@ def run_Insider():
     return sum / 3 * 2
 
 def run_Robust_Case(id):
-    os.system('gtimeout ' + str(time_Limit) + 's ' + './main < Data/RobustDataSet/testcase' + str(id) + '.in > output.txt')
+    os.system('time ./main < Data/RobustDataSet/testcase' + str(id) + '.in > output.txt')
     return filecmp.cmp('Data/RobustDataSet/testcase' + str(id) + '.out', 'output.txt')
 
 def run_Robust():

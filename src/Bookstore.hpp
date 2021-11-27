@@ -14,7 +14,7 @@ namespace finance
 {
     typedef long long ll;
     ll income, cost;
-    fstream fio;
+    std::FILE *fio;
 
 // --------------------------- debug area ---------------------------
 
@@ -30,41 +30,39 @@ namespace finance
 
     void init()
     {
-        fstream fin("storage_finance", ios :: in | ios :: binary);
-        if (!fin.is_open())
+        fio = std::fopen("storage_finance", "rb+");
+        if (fio == nullptr)
         {
-            fstream fout("storage_finance", ios :: out | ios :: binary);
+            fio = std::fopen("storage_finance", "wb+");
             income = cost = 0;
-            fout.write(reinterpret_cast<char *>(&income), sizeof(income));
-            fout.write(reinterpret_cast<char *>(&cost), sizeof(cost));
-            fout.close();
+            std::fwrite(std::addressof(income), sizeof(income), 1, fio);
+            std::fwrite(std::addressof(cost), sizeof(cost), 1, fio);
         }
-        fin.close();
-
-        fio.open("storage_finance", ios :: in | ios :: out | ios :: binary);
-        fio.seekg(0, ios :: beg);
-        fio.read(reinterpret_cast<char *>(&income), sizeof(income));
-        fio.read(reinterpret_cast<char *>(&cost), sizeof(cost));
+        else
+        {
+            std::fread(std::addressof(income), sizeof(income), 1, fio);
+            std::fread(std::addressof(cost), sizeof(cost), 1, fio);
+        }
     }
 
     void add_income(ll delta)
     {
         income += delta;
-        fio.seekg(0, ios :: beg);
-        fio.write(reinterpret_cast<char *>(&income), sizeof(income));
-        fio.seekg(0, ios :: end);
-        fio.write(reinterpret_cast<char *>(&delta), sizeof(delta));
+        std::fseek(fio, 0, SEEK_SET);
+        std::fwrite(std::addressof(income), sizeof(income), 1, fio);
+        std::fseek(fio, 0, SEEK_END);
+        std::fwrite(std::addressof(delta), sizeof(delta), 1, fio);
     }    
 
     void add_cost(ll delta)
     {
         cost += delta;
-        fio.seekg(sizeof(ll), ios :: beg);
-        fio.write(reinterpret_cast<char *>(&cost), sizeof(cost));
+        std::fseek(fio, sizeof(ll), SEEK_SET);
+        std::fwrite(std::addressof(cost), sizeof(cost), 1, fio);
 
         delta = -delta;
-        fio.seekg(0, ios :: end);
-        fio.write(reinterpret_cast<char *>(&delta), sizeof(delta));
+        std::fseek(fio, 0, SEEK_END);
+        std::fwrite(std::addressof(delta), sizeof(delta), 1, fio);
     }
 
     void show(int cnt = 0)
@@ -72,14 +70,15 @@ namespace finance
         if (!cnt) printf("+ %.2lf - %.2lf\n", income / 100.0, cost / 100.0);
         else
         {
-            fio.seekg(0, ios :: end);
-            int tot = (int)fio.tellg() / sizeof(ll) - 2;
+            std::fseek(fio, 0, SEEK_END);
+            int tot = (int)ftell(fio) / sizeof(ll) - 2;
             if (cnt > tot) return log_is_not_enough();
 
-            int pos = (int)fio.tellg() - cnt * sizeof(ll);
-            fio.seekg(pos, ios :: beg);
+            int pos = (int)ftell(fio) - cnt * sizeof(ll);
+            std::fseek(fio, pos, SEEK_SET);
             ll totin = 0, totout = 0;
-            ll delta[cnt]; fio.read(reinterpret_cast<char *>(&delta), sizeof(delta));
+            ll delta[cnt]; 
+            std::fread(delta, sizeof(delta), 1, fio);
             for (int i = 0; i < cnt; i++)
             {
                 if (delta[i] >= 0) totin += delta[i];
@@ -96,7 +95,7 @@ namespace bm
     int key_cnt;
     char key[61][61];
 
-    fstream fio;
+    FILE* fio;
     BPlusTree bpt_isbn("index_books_isbn"), bpt_name("index_books_name"), bpt_aut("index_books_author"), bpt_key("index_books_keyword");
 
 // --------------------------- debug area ---------------------------
@@ -188,15 +187,9 @@ namespace bm
 
     void init()
     {
-        fstream fin("storage_books", ios :: in | ios :: binary);
-        if (!fin.is_open())
-        {
-            fstream fout("storage_books", ios :: out | ios :: binary);
-            fout.close();
-        }
-        fin.close();
-
-        fio.open("storage_books", ios :: in | ios :: out | ios :: binary);
+        fio = std::fopen("storage_books", "rb+");
+        if (fio == nullptr)
+            fio = std::fopen("storage_books", "wb+");
     }
 
     int split_key(const char* keyword)
@@ -240,10 +233,10 @@ namespace bm
     {
         if (pos == -1)
         {
-            fio.seekg(0, ios :: end);
-            pos = fio.tellp();
+            std::fseek(fio, 0, SEEK_END);
+            pos = ftell(fio);
         }
-        else fio.seekg(pos, ios :: beg);
+        else std::fseek(fio, pos, SEEK_SET);
 
         if (isbn) bpt_isbn.insert(now.get_ISBN(), pos);
         if (name) bpt_name.insert(now.get_name(), pos);
@@ -255,7 +248,7 @@ namespace bm
                 bpt_key.insert(key[i], pos);
         }
 
-        fio.write(reinterpret_cast<char *>(&now), sizeof(now));
+        fwrite(std::addressof(now), sizeof(now), 1, fio);
         return pos;
     }
 
@@ -272,16 +265,16 @@ namespace bm
 
     void file_read(int pos, book &now)
     {
-        fio.seekg(pos, ios :: beg);
-        fio.read(reinterpret_cast<char *>(&now), sizeof(now));
+        std::fseek(fio, pos, SEEK_SET);
+        fread(std::addressof(now), sizeof(now), 1, fio);
     }
 
     int find_book(const char* ISBN, book &now)
     {
         int pos = bpt_isbn.query(ISBN);
         if (pos == -1) return -1;
-        fio.seekg(pos, ios :: beg);
-        fio.read(reinterpret_cast<char *>(&now), sizeof(now));
+        std::fseek(fio, pos, SEEK_SET);
+        fread(std::addressof(now), sizeof(now), 1, fio);
         return pos;
     }
 
@@ -390,13 +383,21 @@ namespace bm
         finance :: add_cost(cost);
 
         int pos = um :: current_user.curbk, cnt;
-        fio.seekg(pos, ios :: beg);
-        fio.read(reinterpret_cast<char *>(&cnt), sizeof(cnt));
+        std::fseek(fio, pos, SEEK_SET);
+        fread(std::addressof(cnt), sizeof(cnt), 1, fio);
         cnt += delta;
-        fio.seekg(pos, ios :: beg);
-        fio.write(reinterpret_cast<char *>(&cnt), sizeof(cnt));
+        std::fseek(fio, pos, SEEK_SET);
+        fwrite(std::addressof(cnt), sizeof(cnt), 1, fio);
         // printf("import delta:%d\n", delta);
         // current_book.print();
+    }
+
+    char fpeek(FILE* stream)
+    {
+        char c;
+        c = fgetc(stream);
+        ungetc(c, stream);
+        return c;
     }
 
     void show(char* ty = nullptr, int cnt = 0)
@@ -409,11 +410,11 @@ namespace bm
 
         if (!ty)
         {
-            fio.seekg(0, ios :: beg);
-            if (fio.peek() == EOF) return show_book_not_found();
-            while (fio.peek() != EOF)
+            std::fseek(fio, 0, SEEK_SET);
+            if (fpeek(fio) == EOF) return show_book_not_found();
+            while (fpeek(fio) != EOF)
             {
-                fio.read(reinterpret_cast<char *>(&now), sizeof(now));
+                fread(std::addressof(now), sizeof(now), 1, fio);
                 v.push_back(now);
             }
         }
@@ -424,8 +425,8 @@ namespace bm
             {
                 int pos = bpt_isbn.query(ty + 6);
                 if (pos == -1) return show_book_not_found();
-                fio.seekg(pos, ios :: beg);
-                fio.read(reinterpret_cast<char *>(&now), sizeof(now));
+                std::fseek(fio, pos, SEEK_SET);
+                fread(std::addressof(now), sizeof(now), 1, fio);
                 v.push_back(now);
             }
             else if (type == 2)
@@ -434,16 +435,16 @@ namespace bm
                 int pos = bpt_name.query(ty + 7);
                 if (pos == -1) return show_book_not_found();
 
-                fio.seekg(pos, ios :: beg);
-                fio.read(reinterpret_cast<char *>(&now), sizeof(now));
+                std::fseek(fio, pos, SEEK_SET);
+                fread(std::addressof(now), sizeof(now), 1, fio);
                 while (!strcmp(now.get_name(), ty + 7))
                 {
                     v.push_back(now);
 
                     pos = bpt_name.get_next();
                     if (pos == -1) break;
-                    fio.seekg(pos, ios :: beg);
-                    fio.read(reinterpret_cast<char *>(&now), sizeof(now));
+                    std::fseek(fio, pos, SEEK_SET);
+                    fread(std::addressof(now), sizeof(now), 1, fio);
                 }
             }
             else if (type == 3)
@@ -452,16 +453,16 @@ namespace bm
                 int pos = bpt_aut.query(ty + 9);
                 if (pos == -1) return show_book_not_found();
 
-                fio.seekg(pos, ios :: beg);
-                fio.read(reinterpret_cast<char *>(&now), sizeof(now));
+                std::fseek(fio, pos, SEEK_SET);
+                fread(std::addressof(now), sizeof(now), 1, fio);
                 while (!strcmp(now.get_author(), ty + 9))
                 {
                     v.push_back(now);
 
                     pos = bpt_aut.get_next();
                     if (pos == -1) break;
-                    fio.seekg(pos, ios :: beg);
-                    fio.read(reinterpret_cast<char *>(&now), sizeof(now));
+                    std::fseek(fio, pos, SEEK_SET);
+                    fread(std::addressof(now), sizeof(now), 1, fio);
                 }
             }
             else if (type == 4)
@@ -470,16 +471,16 @@ namespace bm
                 int pos = bpt_key.query(ty + 10);
                 if (pos == -1) return show_book_not_found();
 
-                fio.seekg(pos, ios :: beg);
-                fio.read(reinterpret_cast<char *>(&now), sizeof(now));
+                std::fseek(fio, pos, SEEK_SET);
+                fread(std::addressof(now), sizeof(now), 1, fio);
                 while (check_keyword(now.get_keyword(), ty + 10))
                 {
                     v.push_back(now);
 
                     pos = bpt_key.get_next();
                     if (pos == -1) break;
-                    fio.seekg(pos, ios :: beg);
-                    fio.read(reinterpret_cast<char *>(&now), sizeof(now));
+                    std::fseek(fio, pos, SEEK_SET);
+                    fread(std::addressof(now), sizeof(now), 1, fio);
                 }
             }
             else if (type == 6) 
@@ -510,9 +511,9 @@ namespace bm
         finance :: add_income(1ll * now.get_price() * cnt);
         printf("%.2lf\n", 1ll * now.get_price() * cnt / 100.0);
 
-        fio.seekg(pos, ios :: beg);
+        std::fseek(fio, pos, SEEK_SET);
         cnt = now.get_cnt() - cnt;
-        fio.write(reinterpret_cast<char *>(&cnt), sizeof(cnt));
+        fwrite(std::addressof(cnt), sizeof(cnt), 1, fio);
     }
 }
 
